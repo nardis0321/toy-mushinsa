@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate = "~{layouts/mainLayout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Toyproject2</title>
+
+    <style>
+
+
+
+        .menu-container {
+            background-color: black;
+            padding: 10px 0;
+            width: 650px;
+            transition: background-color 0.3s ease;
+            z-index: 1000;
+            text-align: left;
+        }
+
+        .menu {
+            list-style: none;
+            display: flex;
+        }
+
+        .menu-item {
+            display: inline-block;
+            margin: 0 10px;
+        }
+
+        .menu-item a {
+            text-decoration: none;
+            color: #ccc; /* 기본 텍스트 색상 */
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .menu-item.active a,
+        .menu-item a:hover {
+            color: white; /* 활성화된 메뉴 항목의 색상 */
+        }
+
+        .menu-item a:hover {
+            text-decoration: underline;
+        }
+        .fixed{
+            position: fixed;
+            top: 0;
+            /* width: 100% */
+        }
+
+
+        .item {
+            width: 200px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            justify-content: left;
+            flex-direction: column;
+        }
+
+        .item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .item img.list-image {
+            max-width: 100%;
+            height: 100px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .item p {
+            margin: 5px 0;
+            color: #333;
+            font-size: 10px;
+            font-weight: bold;
+            text-align: left;
+
+        }
+
+        .item .price {
+            color: #e74c3c;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+
+
+    </style>
+</head>
+<header>
+
+</header>
+<body>
+    <div layout:fragment="content">
+
+            <div id="item-contents" >
+                <div id="fixed-menu" class="menu-container">
+                    <ul class="menu">
+                        <li class="menu-item active"><a href="#">추천</a></li>
+                        <li class="menu-item"><a href="/brand/main">브랜드</a></li>
+                        <li class="menu-item"><a href="/product/103">발매</a></li>
+                        <li class="menu-item"><a href="/product/101">랭킹</a></li>
+                        <li class="menu-item"><a href="#">세일</a></li>
+                        <li class="menu-item"><a href="#">뷰티 페스타</a></li>
+                    </ul>
+                </div>
+                <div id="inner">로딩 중...</div>
+            </div>
+
+
+
+
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script>
+
+            let cursorMap = new Object();
+            cursorMap.size = 9;
+            let cursorProductId;
+            cursorMap.sortCode = 'HIGHPRICE';
+
+            const NoMoreRequest = 'End';
+
+            window.addEventListener('DOMContentLoaded', function() {
+                loadItems();
+            });
+
+            window.addEventListener('scroll', function() {
+                if (window.scrollY + window.innerHeight > document.documentElement.scrollHeight - 100) {
+                    loadItems();
+                }
+            });
+
+
+            function loadItems() {
+
+                if(cursorProductId !== null && cursorProductId!==NoMoreRequest ){
+                    cursorMap.cursorProductId = cursorProductId;
+
+                    $.ajax({
+                        url: '/product/list',
+                        type: 'GET',
+                        processData: true,
+                        contentType: "application/x-www-form-urlencoded;",
+                        data: cursorMap,
+
+                        success: function(response) {
+                            console.log('Received response:', response); // 디버깅 정보
+                            if (response.length > 0) {
+                                document.getElementById('inner').style.display = 'none';
+                                response.forEach(function(item) {
+                                    document.getElementById('item-contents').insertAdjacentHTML('beforeend',
+                                        `<div class="item" onclick="location.href='/product/detail/${item.productId}'">
+                                         <img src="${item.repImg}" class="list-image" alt="${item.productName}">
+                                         <p>${item.productName}</p>
+                                         <p class="price">가격: ${item.price.toLocaleString()}원</p>
+                                         </div>`);
+                                });
+                                cursorProductId = response[response.length - 1].productId;
+                            } else {
+                                alert('더 이상 데이터가 없습니다.');
+                                cursorProductId = NoMoreRequest;
+                            }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            document.getElementById('item-contents').textContent = '데이터 로드에 실패했습니다.';
+                        }
+                    });
+                }
+            }
+
+            window.addEventListener('scroll', function() {
+                const menu = document.getElementById('fixed-menu');
+                const topHeaderHeight = document.getElementById('header').offsetHeight;
+
+
+                if (window.scrollY > topHeaderHeight) {
+                    menu.classList.add('fixed');
+                } else {
+                    menu.classList.remove('fixed');
+                }
+            });
+
+        </script>
+    </div>
+</body>
+</html>

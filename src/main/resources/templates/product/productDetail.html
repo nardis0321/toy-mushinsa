@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container_detail {
+            width: 100%;
+            max-width: 650px;
+            box-sizing: border-box; /* 패딩과 보더를 width에 포함 */
+            background-color: #f8f9fa;
+            text-align: center;
+
+        }
+        .product-images img {
+            max-width: 630px;
+            border-radius: 8px;
+        }
+        .product-images .main-img {
+            width: 650px;
+            height: 500px;
+            object-fit: contain;
+        }
+
+        .swiper-container {
+            margin-top: 40px;
+            max-width: 650px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .swiper-slide img {
+            width: 500px;
+            height: auto;
+        }
+        .swiper-wrapper {
+            display: flex;
+        }
+
+
+        .swiper-button-next,
+        .swiper-button-prev {
+            color: #000; /* 아이콘 색상 */
+            position: absolute;
+            top: 50%;
+            width: 30px;
+            height: 30px;
+            margin-top: -15px; /* 아이콘이 슬라이더 중앙에 위치하도록 */
+            z-index: 10;
+        }
+
+        .swiper-button-next {
+            right: 10px; /* 오른쪽에서 10px */
+            transform: translateX(-50%);
+        }
+
+        .swiper-button-prev {
+            left: 10px; /* 왼쪽에서 10px */
+            transform: translateX(50%);
+        }
+
+
+        .product-images .additional-img {
+            width: 650px;
+            max-height: 500px;
+            object-fit: contain;
+        }
+        .product-details {
+            padding: 20px;
+            background: white;
+            width: 650px;
+            /*border-radius: 8px;*/
+            /*box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);*/
+            text-align: justify;
+        }
+        .badge {
+            margin-right: 10px;
+        }
+        .price {
+            margin-top: 10px;
+            margin-left: 10px;
+            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: black;
+        }
+        .quantity {
+            margin-top: 15px;
+        }
+        .total-price {
+            margin-top: 20px;
+            font-size: 15px;
+            font-weight: bold;
+            color: #dc3545;
+        }
+        .buttons button {
+            margin-right: 10px;
+        }
+        .description {
+            margin-top: 30px;
+        }
+        .description img {
+            width: 650px;
+        }
+
+        .top-bar {
+            position: fixed;
+            top: 0;
+            width: 650px;
+            height: 40px;
+            background-color: white;
+            padding: 0 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between; /* 양 끝으로 정렬 */
+            align-items: center;
+        }
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            padding: 0;
+            margin-left: 15px;
+            outline:none;
+        }
+        button.icon-button:focus{
+            border: none;
+            outline:none;
+        }
+
+        .fixed-footer {
+            position: fixed;
+            bottom: 0;
+            height: 40px;
+            width: 100%;
+            max-width: 650px;
+            background-color: white;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .fixed-footer .buy-button {
+            background: black;
+            width: 70%;
+            height: 35px;
+            font-size: 10px;
+        }
+
+
+    </style>
+</head>
+<body>
+
+
+<div class="container_detail">
+    <div class="top-bar">
+            <!--     뒤로가기      -->
+        <div class="top-bar-left">
+            <button id="backbutton" class="icon-button" onclick="goBack()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+                </svg></button>
+        </div>
+        <div class="top-bar-right">
+            <!--     홈       -->
+            <button class="icon-button" onclick="goHome()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+                <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+            </svg>
+            </button>
+            <!--     검색       -->
+            <button class="icon-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+            </svg>
+            </button>
+            <!--     장바구니       -->
+            <button class="icon-button"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-bag" viewBox="0 0 16 16">
+                <path d="M8 1a2.5 2.5 0 0 1 2.5 2.5V4h-5v-.5A2.5 2.5 0 0 1 8 1m3.5 3v-.5a3.5 3.5 0 1 0-7 0V4H1v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4zM2 5h12v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/>
+            </svg>
+            </button>
+        </div>
+    </div>
+
+
+
+    <div class="swiper-container">
+
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <img id="mainImage" class="main-img" th:src="@{${productDetail.repImg}}" th:alt="${productDetail.getName()}">
+            </div>
+            <div th:each="itemImg : ${productDetail.productImages}" class="swiper-slide">
+                <img th:src="@{${itemImg.path}}"  width="800">
+            </div>
+
+        </div>
+
+        <!-- 추가적으로 슬라이더 네비게이션 버튼을 추가할 수 있습니다 -->
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+
+        <!-- 슬라이더 페이지네이션 -->
+
+    </div>
+
+
+
+    <div class="product-details">
+            <hr>
+        <div class="d-flex justify-content-between" style="flex-direction: column; margin-left: 20px" >
+            <a style="text-decoration-line: none; color: black" th:href="|@{/brand/}${productDetail.brandId}|"><p style="margin-bottom: 0" th:text="${productDetail.getBrandName()}"></p></a>
+        </div>
+            <hr>
+        <div class="d-flex justify-content-between" style="flex-direction: column; margin-top: 10px">
+            <a><p th:text="${productDetail.getCategoryName()}"></p></a>
+            <h5 class="h5" th:text="${productDetail.getName()}"></h5>
+            <span th:if="${productDetail.eventPrice}" class="badge badge-success" style="background: #222222; width: 40px">
+                    세일
+                </span>
+        </div>
+        <div style="display: flex;flex-direction : row; vertical-align: bottom;align-items : baseline; ">
+            <div class="price" th:text="|${productDetail.getPrice()}원|" style="text-decoration: line-through crimson; font-size: 15px;color: #aaaaaa; margin-bottom: 5px; margin-left: 0px; vertical-align: bottom "></div>
+            <div class="price" id="price" th:text="|${productDetail.getEventPrice()} 원|"></div>
+        </div>
+        <div id="option-container"></div>
+
+        <div class="input-group" id="count-div">
+            <div class="input-group-prepend">
+                <span class="input-group-text">수량</span>
+            </div>
+            <input type="number" class="form-control" name="count" id="count" value="1" min="1"  style="background: white" readonly>
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary"  type="button" id="incrementCount" onclick="incrementCount()">+</button>
+                <button class="btn btn-outline-secondary" type="button" id="decrementCount" onclick="decrementCount()">-</button>
+            </div>
+        </div>
+
+        <div class="total-price mt-3" id="totalPrice"></div>
+        <div class="buttons mt-3">
+            <button type="button" class="btn btn-primary" style="background: black; border: none;" th:if="${productDetail.getProductStatus().toString().equals('SELL')}" onclick="addCart()">장바구니 담기</button>
+            <button type="button" class="btn btn-success" th:if="${productDetail.getProductStatus().toString().equals('SELL')}" onclick="order()">주문하기</button>
+            <button type="button" class="btn btn-secondary" th:unless="${productDetail.getProductStatus().toString().equals('SELL')}">품절</button>
+            <p th:text="|별점 = ${productDetail.getStarRating()}|/10"></p>
+        </div>
+    </div>
+
+    <div class="description">
+        <p th:text="|등록자 =${productDetail.getRegisterManager()}|"></p>
+        <p th:text="|후기 수 =${productDetail.getReviewCount()}|"></p>
+        <p th:text="|좋아요 수 =${productDetail.getLikeCount()}|"></p>
+        <p th:text="|조회 수 =${productDetail.getViewCount()}|"></p>
+        <h4>상품 상세 설명</h4>
+        <p th:text="${productDetail.productDescription.getDescription()}"></p>
+        <div>
+            <img th:src="@{${productDetail.repImg}}" th:alt="${productDetail.getName()}">
+            <div id ="additional-images" style="display: none">
+                <div  th:each="itemImg : ${productDetail.descriptionImages}">
+                    <img th:src="@{${itemImg.path}}" >
+                </div>
+            </div>
+            <button id="show-more-btn"  style="margin-bottom: 40px; width: 450px; height: 40px; border-color: #aaaaaa; background: ghostwhite">상품 정보 더보기</button>
+        </div>
+    </div>
+    <div class="fixed-footer">
+        <button class="icon-button" onclick="like()" >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
+                <path d="M8 3.314C12.438-1.248 23.534 4.735 8 15-7.534 4.735 3.562-1.248 8 3.314z"/>
+            </svg>
+        </button>
+        <button class="buy-button" id="addToCartButton" onclick="openOptions()">구매하기</button>
+    </div>
+</div>
+
+
+
+<script th:inline="javascript">
+    const countElement = document.getElementById(`count`);
+    const incrementButton = document.getElementById('incrementCount')
+    const decrementButton = document.getElementById('decrementCount')
+    const productId = [[${productDetail.productId}]];
+    const priceElement = document.getElementById('price');
+    const totalPriceElement = document.getElementById('totalPrice');
+
+    const optionLevels = /*[[${productDetail.productOptionDepth}]]*/ 0;
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const optionContainer = document.getElementById('option-container');
+        const optionList = /*[[${productDetail.optionList}]]*/ [];
+        const optionLevels = /*[[${productDetail.productOptionDepth}]]*/ 0;
+        const selectedOptionNames = new Array(optionLevels).fill("")
+        countElement.disabled = true;
+        incrementButton.disabled = true;
+        decrementButton.disabled = true;
+
+        function updateTotalPrice() {
+            const price = parseFloat(priceElement.innerText.replace(/[^0-9.-]+/g, ""));
+            const count = parseInt(countElement.value, 10);
+            const totalPrice = price * count;
+            totalPriceElement.innerText = `₩${totalPrice.toLocaleString()}`;
+        }
+        countElement.addEventListener('input', updateTotalPrice);
+        updateTotalPrice();
+
+        initializeOptions(optionList, optionLevels, selectedOptionNames);
+
+    });
+    function updateTotalPrice() {
+        const price = parseFloat(priceElement.innerText.replace(/[^0-9.-]+/g, ""));
+        const count = parseInt(countElement.value, 10);
+        const totalPrice = price * count;
+        totalPriceElement.innerText = `₩${totalPrice.toLocaleString()}`;
+    }
+
+
+
+    function initializeOptions(optionList, optionLevels, selectedOptionNames) {
+        const optionContainer = document.getElementById('option-container');
+
+
+        // 옵션 계층만큼 select 요소를 생성
+        for (let i = 1; i <= optionLevels; i++) {
+            const selectElement = document.createElement('select');
+            selectElement.id = `optionLevel${i}`;
+            selectElement.disabled = i !== 1; // 첫 번째 select만 활성화
+            selectElement.addEventListener('change', function() {
+                handleOptionChange(i, optionList, optionLevels, selectedOptionNames);
+            });
+
+            const placeholderOption = document.createElement('option');
+            placeholderOption.value = "";
+            placeholderOption.textContent = `옵션 ${i} 선택`;
+            selectElement.appendChild(placeholderOption);
+
+            optionContainer.appendChild(selectElement);
+        }
+
+        populateOptions(1, null, optionList, selectedOptionNames);
+    }
+
+    function populateOptions(level, parentOptionId, optionList, selectedOptionNames) {
+        const selectElement = document.getElementById(`optionLevel${level}`);
+
+        if (!selectElement) {
+            console.error(`Select element for level ${level} not found!`);
+            return;
+        }
+
+        selectElement.innerHTML = `<option value="">옵션 ${level} 선택</option>`; // 초기화
+
+        const filteredOptions = optionList.filter(option => option.optionDepth === level && (!parentOptionId || option.productOptionId.startsWith(parentOptionId)));
+        console.log(filteredOptions);
+
+        filteredOptions.forEach(option => {
+            const opt = document.createElement('option');
+            opt.value = option.productOptionId;
+            opt.textContent = option.optionName;
+            selectElement.appendChild(opt);
+        });
+
+        selectElement.disabled = filteredOptions.length === 0;
+    }
+
+
+    let lastOptionName="";
+    let lastOptionId="";
+    function handleOptionChange(level, optionList, optionLevels, selectedOptionNames) {
+        const selectedOptionId = document.getElementById(`optionLevel${level}`).value;
+        const selectedOptionText = document.getElementById(`optionLevel${level}`).options[document.getElementById(`optionLevel${level}`).selectedIndex].text;
+
+        // 선택된 옵션 이름 저장
+        selectedOptionNames[level - 1] = selectedOptionText;
+
+        // 하위 옵션 비활성화 및 초기화
+        for (let i = level + 1; i <= optionLevels; i++) {
+            const nextSelectElement = document.getElementById(`optionLevel${i}`);
+
+            if (!nextSelectElement) {
+                console.error(`Select element for level ${i} not found!`);
+                return;
+            }
+
+            nextSelectElement.innerHTML = `<option value="">옵션 ${i} 선택</option>`;
+            nextSelectElement.disabled = true;
+        }
+
+
+        // 선택한 옵션에 따라 다음 계층의 옵션을 로드
+        if (selectedOptionId) {
+            populateOptions(level + 1, selectedOptionId, optionList, selectedOptionNames);
+        }
+
+        // 최종 옵션까지 선택된 경우 전체 옵션 이름을 출력
+        if (level === optionLevels && selectedOptionId.length === optionLevels*2) {
+            console.log("true" + selectedOptionId.length);
+            lastOptionName = selectedOptionNames.join('/');
+            countElement.disabled = false;
+            incrementButton.disabled = false;
+            decrementButton.disabled = false;
+            lastOptionId = selectedOptionId;
+        }else{
+            console.log("false" + selectedOptionId.length);
+            incrementButton.disabled = true;
+            decrementButton.disabled = true;
+            countElement.disabled = true;
+            countElement.value = 1;
+            lastOptionId ="";
+        }
+    }
+
+    let swiper = new Swiper('.swiper-container', {
+        slidesPerView: 1,
+        spaceBetween: 10,
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+        loop: true, // 슬라이더 반복 옵션
+    });
+
+    function addCart() {
+        if(lastOptionId.length === optionLevels*2 ) {
+            console.log("수량 :" + countElement.value);
+            console.log("상품 ID : " + productId);
+            console.log("product_option-fullName : " + lastOptionName);
+            console.log("product_last_option_id : " + lastOptionId);
+            alert('장바구니에 추가되었습니다.');
+        }else {
+            alert('옵션을 먼저 선택해 주십시오.')
+        }
+    }
+
+    function order() {
+        if(lastOptionId.length === optionLevels*2 ){
+            console.log(lastOptionId.length);
+            console.log(optionLevels*2);
+
+            console.log("수량 :"+countElement.value);
+            console.log("상품 ID : " +productId);
+            console.log("product_option-fullName : "+lastOptionName);
+            console.log("product_last_option_id : "+lastOptionId);
+            alert('주문이 완료되었습니다.');
+        }else{
+            alert('옵션을 먼저 선택해 주십시오.')
+        }
+    }
+    document.getElementById("show-more-btn").addEventListener("click", function() {
+        var additionalImages = document.getElementById("additional-images");
+        if (additionalImages.style.display === "none") {
+            additionalImages.style.display = "block";
+            this.innerHTML = "상품 정보 접기";  // 버튼 텍스트 변경
+        } else {
+            additionalImages.style.display = "none";
+            this.innerHTML = "상품 정보 더보기";
+        }
+    });
+
+    function goBack() {
+        window.history.back();
+        // 또는 window.history.go(-1); 를 사용할 수 있습니다.
+    }
+    function goHome() {
+        window.location = '/product/100';
+        // 또는 window.history.go(-1); 를 사용할 수 있습니다.
+    }
+
+    function like(){
+        
+    }
+    function incrementCount() {
+        const currentValue = parseInt(countElement.value, 10);
+        countElement.value = currentValue + 1;
+        updateTotalPrice();
+    }
+
+    function decrementCount() {
+        const currentValue = parseInt(countElement.value, 10);
+        if (currentValue > 1) {
+            countElement.value = currentValue - 1;
+            updateTotalPrice();
+        }
+    }
+</script>
+    </div>
+</body>
+</html>

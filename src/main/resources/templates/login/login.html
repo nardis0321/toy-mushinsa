@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인</title>
+    <link rel="stylesheet" href="/css/loginStyle.css">
+<!--    <link rel="stylesheet" href="styles.css">-->
+</head>
+<body>
+<div class="login-container">
+    <div class="login-header">
+        <button class="back-button">◀</button>
+        <h2>로그인</h2>
+    </div>
+
+    <div class="login-tabs">
+        <button class="active-tab">가입 회원</button>
+        <button class="inactive-tab">비회원 주문 조회</button>
+    </div>
+
+    <form action="/member/login" method="post" class="login-form">
+        <input type="text" name="id" placeholder="아이디" required>
+        <div class="password-input">
+            <input type="password" name="password" placeholder="비밀번호" required>
+            <button type="button" class="password-toggle">👁️</button>
+        </div>
+        <button type="submit" class="login-button">로그인</button>
+
+        <div class="options">
+            <label><input type="checkbox" name="auto-login"> 자동 로그인</label>
+            <a href="#" class="find-links">아이디 찾기</a>
+            <span>|</span>
+            <a href="#" class="find-links">비밀번호 찾기</a>
+        </div>
+    </form>
+
+    <div class="social-login">
+        <button class="kakao-login">카카오 로그인</button>
+        <button class="apple-login">Apple 로그인</button>
+    </div>
+
+    <div class="signup-section">
+        <p>가입 즉시 20% 할인 쿠폰 지급</p>
+        <button class="signup-button">회원가입</button>
+    </div>
+</div>
+
+<script>
+    // 비밀번호 보기/숨기기 기능
+    const toggleButton = document.querySelector('.password-toggle');
+    const passwordInput = document.querySelector('input[name="password"]');
+
+    toggleButton.addEventListener('click', () => {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+    });
+
+    // URL 파라미터로 errorMessage 확인 후 alert 표시
+    const urlParams = new URLSearchParams(window.location.search);
+    const errorMessage = urlParams.get('error');
+    if (errorMessage) {
+        alert(decodeURIComponent(errorMessage));
+    }
+</script>
+</body>
+</html>
+

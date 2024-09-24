@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주문 내역</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Helvetica', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            margin-top: 50px;
+            max-width: 1200px;
+        }
+
+        .order-row {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-row h5 {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .order-row .order-info {
+            margin-bottom: 10px;
+        }
+
+        .order-row .product-image img {
+            width: 80px;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .order-row .product-name {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .order-row .product-options p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .status-label {
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: #fff;
+        }
+
+        /* 상태에 따른 무채색 배경색 */
+        .status-0 { background-color: #666; } /* 결제 완료 */
+        .status-3 { background-color: #999; } /* 배송 중 */
+        .status-5 { background-color: #777; } /* 배송 완료 */
+        .status-10, .status-15 { background-color: #444; } /* 주문 취소, 환불 완료 */
+        .status-20, .status-25 { background-color: #333; } /* 반품 요청, 반품 완료 */
+
+        .btn-group-order {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        /* 버튼 스타일 */
+        .btn-group-order .btn {
+            margin-left: 10px;
+            color: #fff;
+        }
+
+        .btn-view {
+            background-color: #444;
+            border-color: #444;
+        }
+
+        .btn-view:hover {
+            background-color: #222;
+            border-color: #222;
+        }
+
+        .btn-cancel {
+            background-color: #888;
+            border-color: #888;
+        }
+
+        .btn-cancel:hover {
+            background-color: #555;
+            border-color: #555;
+        }
+
+        .button-group {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .button-group .btn-secondary {
+            background-color: #888;
+            border-color: #888;
+            color: #fff;
+        }
+
+        .button-group .btn-secondary:hover {
+            background-color: #555;
+            border-color: #555;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>주문 내역</h1>
+
+    <div id="order-list">
+        <!-- 주문 리스트가 여기에 표시됩니다. -->
+    </div>
+
+    <div class="button-group">
+        <a href="#" class="btn btn-secondary">뒤로 가기</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const memberId = 1;
+
+        function getStatusText(stateCode) {
+            switch (stateCode) {
+                case 0: return '결제 완료';
+                case 3: return '배송 중';
+                case 5: return '배송 완료';
+                case 10: return '주문 취소';
+                case 15: return '환불 완료';
+                case 20: return '반품 요청';
+                case 25: return '반품 완료';
+                default: return '알 수 없음';
+            }
+        }
+
+        fetch(`http://localhost:8080/api/orders/members?memberId=${memberId}`)
+            .then(response => response.json())
+            .then(data => {
+                const orderList = document.getElementById('order-list');
+                const orders = data.order.body;
+                const productDetails = data.productDetails;
+
+                orders.forEach(order => {
+                    const stateText = getStatusText(order.stateCode);
+
+                    let productListHtml = '';
+                    order.products.forEach(product => {
+                        const productDetail = productDetails.find(p => p.productId === product.productId);
+                        const options = product.options.map(option => `
+                            <p><strong>${option.optionCategory}:</strong> ${option.optionName}</p>
+                        `).join('');
+
+                        productListHtml += `
+                            <div class="row align-items-center">
+                                <div class="col-2 product-image">
+                                    <img src="${productDetail.repImg}" alt="Product Image">
+                                </div>
+                                <div class="col-10">
+                                    <p class="product-name">${productDetail.productName}</p>
+                                    <div class="product-options">${options}</div>
+                                    <p><strong>가격:</strong> ${product.price} 원</p>
+                                    <p><strong>수량:</strong> ${product.amount}</p>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    const orderHtml = `
+                        <div class="order-row">
+                            <div class="order-info">
+                                <h5>${order.orderId}</h5>
+                                <p><strong></strong> ${new Date(order.orderDatetime).toLocaleString()}</p>
+                                <p class="status-label status-${order.stateCode}"><strong>상태:</strong> ${stateText}</p>
+                            </div>
+                            ${productListHtml}
+                            <div class="btn-group-order">
+                                <a href="order-detail.html?orderId=${order.orderId}" class="btn btn-view">상세 보기</a>
+                                <button class="btn btn-cancel">주문 취소</button>
+                            </div>
+                        </div>
+                    `;
+
+                    orderList.innerHTML += orderHtml;
+                });
+            })
+            .catch(error => console.error('Error fetching order list:', error));
+    });
+</script>
+</body>
+</html>

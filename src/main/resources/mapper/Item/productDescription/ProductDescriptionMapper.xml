@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="productDescriptionMapper">
+<!--    <resultMap id="ProductMap" type="Product">-->
+<!--        <id column="product_id" property="userNo" jdbcType="INTEGER" javaType="int"/>-->
+<!--        <result column="name" property="userName" jdbcType="VARCHAR" javaType="String"/>-->
+<!--    </resultMap>-->
+
+    <select id="findById" parameterType="String" resultType="com.toyproject2_5.musinsatoy.Item.productDescription.dto.ProductDescriptionDto">
+        SELECT product_description_id, description
+            FROM product_description 
+            WHERE product_description_id = #{productDescriptionId}
+    </select>
+
+    <select id="findByProductId" parameterType="String" resultType="com.toyproject2_5.musinsatoy.Item.productDescription.dto.ProductDescriptionDto">
+        SELECT product_description_id, description
+            FROM product_description pd
+            WHERE product_description_id = (select product_description_id from product where product_id = #{productId})
+    </select>
+
+    <!--  상품 수정시 같은 카테고리에 있는 상세 설명 보여주기 위해서.(재사용)  -->
+    <select id="findByCategoryId" parameterType="String" resultType="com.toyproject2_5.musinsatoy.Item.productDescription.dto.ProductDescriptionDto">
+        SELECT product_description_id, description
+            FROM product_description pd
+            WHERE  product_descipription_id = (SELECT product_description id FROM product WHERE category_id = #{categoryId})
+    </select>
+<!--  나중에 상품 상세에  내용 더 추가할지 생각(공급사, 공장, 택배사, 위치 등등)  -->
+    <update id="updateDescription" parameterType="com.toyproject2_5.musinsatoy.Item.productDescription.dto.ProductDescriptionDto">
+        UPDATE product_description
+            <set>
+                <if test="description != null"> description = #{description} , </if>
+                    modify_datetime = NOW()
+            </set>
+            WHERE product_description_id = #{productDescriptionId}
+    </update>
+            
+
+    <insert id="insert" parameterType="com.toyproject2_5.musinsatoy.Item.productDescription.dto.ProductDescription">
+        INSERT INTO product_description (product_description_id,
+                           description,
+                           modify_datetime)
+        VALUES (
+                #{productDescriptionId}
+                ,#{description}
+                , NOW()
+               )
+    </insert>
+
+    <delete id="delete" parameterType="String">
+        DELETE FROM product_description WHERE product_description_id =#{productDescriptionId}
+    </delete>
+
+</mapper>

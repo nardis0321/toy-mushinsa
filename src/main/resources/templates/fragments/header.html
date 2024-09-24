@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<style>
+    a{
+        text-decoration-line:  none;
+    }
+
+</style>
+<div th:fragment="header">
+    <div class="center">
+        <div id="header">
+            <ul>
+                <li><a href="/product/100">Toy5</a></li><li>
+                <a href="/cs/faq/list">FAQ</a></li><li>
+                <a href="/product/admin/register">Register</a></li><li>
+                <a th:unless="${session.id == null}" href="/product/admin/list">Admin</a></li><li>
+                <a th:if="${session.id == null}" href="/member/login">Login</a></li><li>
+                <a th:unless="${session.id == null}" href="/member/logout">logout</a></li><li>
+                <a href="/signup/signup">signup</a></li>
+                    <form style="margin-left: 30px" action="/product/search" method="get">
+                        <label>
+                            <input id="keyword" name="keyword" type="text" class="page-search-header" placeholder="검색" >
+                        </label>
+                        <button  id="submitbtn" onclick="search();">
+                            검색
+                        </button>
+                    </form>
+            </ul>
+        </div>
+    </div>
+    <script th:inline="javascript">
+        document.getElementById("btn1").addEventListener("click", search);
+        function search(){
+             keyword = document.getElementById("keyword").value;
+        }
+    </script>
+</div>
+
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate = "~{layouts/mainLayout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>브랜드 목록</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .container {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+            max-width: 650px;
+        }
+        .brand-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .brand-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .brand-img {
+            height: 200px;
+            object-fit: scale-down;
+        }
+
+        .brand-item {
+            margin-bottom: 15px;
+        }
+        .pagination {
+            display: flex; /* 부모 요소에 flexbox 적용 */
+            justify-content: center; /* 가운데 정렬 */
+            margin-top: 20px; /* 적절한 여백을 추가 */
+            text-align: center; /* 텍스트 가운데 정렬 */
+        }
+
+        .pagination ul {
+            list-style: none;
+            display: inline-flex;
+            padding: 0;
+        }
+
+        .pagination li {
+            margin: 0 5px;
+        }
+
+        .pagination li a {
+            text-decoration: none;
+            padding: 8px 12px;
+            color: #007bff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .pagination li.active a {
+            background-color: #007bff;
+            color: #fff;
+            border-color: #007bff;
+        }
+        p{
+            margin : 0;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container">
+        <h1 class="text-center mb-4">브랜드 목록</h1>
+        <div class="flex-column">
+            <div class="col-md-4 col-lg-4 brand-item" style="min-width: 620px " th:each="brand : ${brands}">
+                <a th:href="@{/brand/{id}(id=${brand.brandId})}" class="card brand-card" style="text-decoration-line: none; color: black ">
+                    <img th:src="@{${brand.img}}" alt="브랜드 이미지" class="card-img-top brand-img">
+                    <div class="card-body text-center">
+                        <h5 class="card-title" th:text="${brand.name}"></h5>
+                        <h6 class="card-title" th:text="|판매 개수 : ${brand.salesCount}|"></h6>
+                    </div>
+                </a>
+            </div>
+
+        </div>
+        <div class="pagination">
+            <ul>
+                <li> <a th:if="${pageInfo.prevPage!=pageInfo.getPaging().getPageNum()}" th:href ="@{|/brand/main?pageNum=${pageInfo.prevPage}|}" th:text="|<|"> \< </a>   </li>
+                <li th:each="pageNum : ${#numbers.sequence(pageInfo.beginPage, pageInfo.endPage)}">
+                    <!--                    th:if="${pageNum >= currentPage - 2} and ${pageNum <= currentPage + 2}"-->
+                    <!--                    th:classappend="${pageNum == currentPage} ? 'active'">-->
+                    <a th:href="@{|/brand/main?pageNum=${pageNum}|}"
+                       th:text="${pageNum}">1</a>
+                </li>
+                <li> <a th:if="${pageInfo.nextPage!=pageInfo.getPaging().getPageNum()}" th:href ="@{|/brand/main?pageNum=${pageInfo.nextPage}|}" th:text="|>|"> X </a>   </li>
+
+            </ul>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

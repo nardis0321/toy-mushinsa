@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="productMapper">
+
+
+    <sql id="search">
+        <where>
+            <if test="brandId != null">
+                p.brand_id = #{brandId}
+            </if>
+            <if test="keyword !=null">
+              AND  p.name LIKE CONCAT('%', #{keyword},'%')
+            </if>
+            <if test="categoryId != null">
+              AND  p.category_id IN (#{categoryId})
+            </if>
+            AND p.product_status != 'NOTAVAIL'
+        </where>
+    </sql>
+
+
+    <select id="findNameById" parameterType="String" resultType="String">
+        SELECT name FROM product WHERE product_id = #{productId}
+    </select>
+
+    <select id="findProductAdminList" parameterType="com.toyproject2_5.musinsatoy.Item.product.dto.pagination.adminEdit.ProductEditPageDto"  resultType="com.toyproject2_5.musinsatoy.Item.product.dto.ProductAdminList">
+        SELECT product_id
+        , name
+        , product_status
+        , rep_img
+        , create_datetime
+            FROM product
+            <where>
+                <if test="brandId!='NONE'.toString()"> brand_id = #{brandId}</if>
+                <if test="categoryId != null"> AND category_id = #{categoryId} </if>
+                <if test="keyword != null"> AND p.name LIKE CONCAT('%', #{keyword},'%') </if>
+            </where>
+            Order By create_datetime desc
+            limit ${pageSize}
+            offset ${offset}
+
+    </select>
+
+
+    <select id="countProductAdminList" parameterType="com.toyproject2_5.musinsatoy.Item.product.dto.pagination.adminEdit.ProductEditPageDto"  resultType="Integer">
+        SELECT count(*)
+        FROM product
+        <where>
+            <if test="brandId!='NONE'.toString()"> brand_id = #{brandId}</if>
+            <if test="categoryId != null"> AND category_id = #{categoryId} </if>
+            <if test="keyword != null"> AND p.name LIKE CONCAT('%', #{keyword},'%') </if>
+        </where>
+
+    </select>
+
+    <select id="findRepImgById" parameterType="String" resultType="String">
+        SELECT rep_img
+            from product
+            WHERE product_id = #{productId}
+    </select>
+
+    <select id="countSearchProduct"  parameterType="com.toyproject2_5.musinsatoy.Item.product.dto.pagination.hasNextOffset.SearchProductDto" resultType ="Integer">
+        SELECT count(*)
+            from product p
+            INNER JOIN brand b
+            ON p.brand_id = b.brand_id
+            <where>
+                <if test="keyword != null"> p.name LIKE CONCAT('%', #{keyword},'%') </if>
+                <if test="categoryId != null"> AND p.category_id =#{categoryId} </if>
+            </where>
+            <choose>
+                <when test="sortCode eq 'NEW'.toString()">
+                    Order By p.create_datetime DESC , p.product_id DESC
+                </when>
+                <when test="sortCode eq 'RANKING'.toString()">
+                    Order By p.star_rating DESC, p.product_id DESC
+                </when>
+                <when test="sortCode eq 'SALES'.toString()">
+                    Order By p.sales_quantity DESC, p.product_id DESC
+                </when>
+                <when test="sortCode eq 'CHEAP'.toString()">
+                    Order By p.price ASC, p.product_id DESC
+                </when>
+                <otherwise>
+                    Order By p.product_id DESC
+                </otherwise>
+            </choose>
+    </select>
+    <select id="findProductByKeyword" parameterType="com.toyproject2_5.musinsatoy.Item.product.dto.pagination.hasNextOffset.SearchProductDto" resultType="com.toyproject2_5.musinsatoy.Item.product.dto.ProductPageDto">
+        SELECT p.product_id
+        , p.name as productName
+        , p.event_price
+        , p.price
+        , p.rep_img
+        , p.star_rating
+        , p.like_count
+        , p.brand_id
+        , b.name as brandName
+            from product p
+            INNER JOIN brand b
+            ON p.brand_id = b.brand_id
+            <where>
+                <if test="keyword != null"> p.name LIKE CONCAT('%', #{keyword},'%') </if>
+                <if test="categoryId != null"> AND p.category_id =#{categoryId} </if>
+            </where>
+        <choose>
+            <when test="sortCode eq 'NEW'.toString()">
+                Order By p.create_datetime DESC , p.product_id DESC
+            </when>
+            <when test="sortCode eq 'RANKING'.toString()">
+                Order By p.star_rating DESC, p.product_id DESC
+            </when>
+            <when test="sortCode eq 'SALES'.toString()">
+                Order By p.sales_quantity DESC, p.product_id DESC
+            </when>
+            <when test="sortCode eq 'CHEAP'.toString()">
+                Order By p.price ASC, p.product_id DESC
+            </when>
+            <otherwise>
+                Order By p.product_id DESC
+            </otherwise>
+        </choose>
+        limit ${size}
+        offset ${offset}
+
+    </select>
+
+
+    <select id="findProductDetailDtoById" parameterType="String" resultType="com.toyproject2_5.musinsatoy.Item.product.dto.ProductDetailDto">
+        SELECT
+        p.product_id
+        , p.name
+        , p.brand_id
+        , b.name as brandName
+        , p.price
+        , p.event_price
+        , p.rep_img
+        , p.product_option_depth
+        , p.category_id
+        , p.sales_quantity
+        , p.like_count
+        , p.review_count
+        , p.view_count
+        , p.star_rating
+        , p.register_manager
+        , p.product_status
+            FROM product p
+            INNER JOIN brand b
+            ON p.brand_id = b.brand_id
+        WHERE p.product_id = #{productId} AND p.product_status !='NOTAVAIL'
+
+    </select>
+
+
+<!--    주문 리스트/상세 조회를 위해 추가 됨-->
+    <select id="findProductPageDtoByProductId" parameterType="String"  resultType="com.toyproject2_5.musinsatoy.Item.product.dto.ProductPageDto">
+        SELECT p.product_id as productId
+        , p.name as productName
+        , p.price as price
+        , p.rep_img as repImg
+        , p.star_rating as starRating
+        , b.brand_id as brandId
+        , b.name as brandName
+        , p.sales_quantity as salesQuantity
+        FROM product p
+        INNER JOIN brand b
+        ON p.brand_id = b.brand_id
+        WHERE p.product_id = #{productId}
+    </select>
+
+
+<!-- 커서 기반  -->
+    <!-- 이거 조짐. 너무 많다 중복이. -->
+    <select id="cursorPaging" parameterType="hashMap"  resultType="com.toyproject2_5.musinsatoy.Item.product.dto.ProductPageDto">
+        SELECT p.product_id as productId
+        , p.name as productName
+        , p.price as price
+        , p.rep_img as repImg
+        , p.star_rating as starRating
+        , b.brand_id as brandId
+        , b.name as brandName
+        , p.sales_quantity as salesQuantity
+        FROM product p
+        INNER JOIN brand b
+        ON p.brand_id = b.brand_id
+        <where>
+            <if test="cursorProductId != null">
+                p.product_id<![CDATA[ < ]]> #{cursorProductId}
+            </if>
+            <if test ="keyword != null">
+                AND p.name LIKE CONCAT('%', #{keyword},'%')
+            </if>
+        </where>
+        Order By p.product_id DESC
+        limit #{size}
+    </select>
+
+    <select id="cursorRankingPage" parameterType="hashMap"  resultType="com.toyproject2_5.musinsatoy.Item.product.dto.pagination.cursor.ProductCursorPageDto">
+        SELECT p.product_id as productId
+             , p.name as productName
+             , p.price as price
+             , p.rep_img as repImg
+             , p.star_rating as starRating
+             , b.brand_id as brandId
+             , b.name as brandName
+             , p.sales_quantity as salesQuantity
+        FROM product p
+                 INNER JOIN brand b
+                            ON p.brand_id = b.brand_id
+        <where>
+            <if test ="cursorProductId != null">
+                ((p.star_rating <![CDATA[ < ]]> (select star_rating from product where product_id = #{cursorProductId}))
+                OR (p.star_rating =  (select star_rating from product where product_id =#{cursorProductId}) AND product_id <![CDATA[ < ]]> #{cursorProductId}))
+            </if>
+            <if test ="keyword != null">
+                AND p.name LIKE CONCAT('%', #{keyword},'%')
+            </if>
+        </where>
+        ORDER BY star_rating desc, product_id desc
+        limit #{size}
+
+    </select>
+
+    <select id="cursorSalesQuantityPage" parameterType="hashMap"  resultType="com.toyproject2_5.musinsatoy.Item.product.dto.pagination.cursor.ProductCursorPageDto">
+        SELECT p.product_id as productId
+        , p.name as productName
+        , p.price as price
+        , p.rep_img as repImg
+        , p.star_rating as starRating
+        , b.brand_id as brandId
+        , b.name as brandName
+        , p.sales_quantity as salesQuantity
+        FROM product p
+        INNER JOIN brand b
+        ON p.brand_id = b.brand_id
+        <where>
+            <if test ="cursorProductId != null">
+                ((p.sales_quantity <![CDATA[ < ]]> (select sales_quantity from product where product_id = #{cursorProductId}))
+                OR (p.sales_quantity =  (select sales_quantity from product where product_id =#{cursorProductId}) AND product_id <![CDATA[ < ]]> #{cursorProductId}))
+            </if>
+            <if test ="keyword != null">
+                AND p.name LIKE CONCAT('%', #{keyword},'%')
+            </if>
+        </where>
+        ORDER BY p.sales_quantity desc, p.product_id desc
+        limit #{size}
+
+    </select>
+
+
+    <!--    create index priceASC_productASC on product(price ASC, product_id ASC);-->
+
+    <select id="cursorHighPricePage" parameterType="hashMap"  resultType="com.toyproject2_5.musinsatoy.Item.product.dto.pagination.cursor.ProductCursorPageDto">
+        SELECT p.product_id as productId
+        , p.name as productName
+        , p.price as price
+        , p.rep_img as repImg
+        , p.star_rating as starRating
+        , b.brand_id as brandId
+        , b.name as brandName
+        , p.sales_quantity as salesQuantity
+        FROM product p
+        INNER JOIN brand b
+        ON p.brand_id = b.brand_id
+        <where>
+            <if test ="cursorProductId != null">
+                ((price  <![CDATA[ < ]]>  (select price from product where product_id = #{cursorProductId}))
+                OR (price = (select price from product where product_id =#{cursorProductId}) AND product_id  <![CDATA[ < ]]> #{cursorProductId}))
+            </if>
+            <if test ="keyword != null">
+                AND p.name LIKE CONCAT('%', #{keyword},'%')
+            </if>
+        </where>
+        ORDER BY price desc, product_id desc
+        limit #{size}
+    </select>
+
+    <!--  부등호 방향 바뀜  낮은 가격 순 -->
+
+    <select id="cursorLowPricePage" parameterType="hashMap"  resultType="com.toyproject2_5.musinsatoy.Item.product.dto.pagination.cursor.ProductCursorPageDto">
+        SELECT p.product_id as productId
+        , p.name as productName
+        , p.price as price
+        , p.rep_img as repImg
+        , p.star_rating as starRating
+        , b.brand_id as brandId
+        , b.name as brandName
+        , p.sales_quantity as salesQuantity
+        FROM product p
+        INNER JOIN brand b
+        ON p.brand_id = b.brand_id
+        <where>
+            <if test ="cursorProductId != null">
+                ((price  <![CDATA[ > ]]> (select price from product where product_id =#{cursorProductId}))
+                OR (price = (select price from product where product_id =#{cursorProductId}) AND product_id  <![CDATA[ > ]]> #{cursorProductId}))
+            </if>
+            <if test ="keyword != null">
+                    AND  p.name LIKE CONCAT('%', #{keyword},'%')
+            </if>
+        </where>
+        ORDER BY price asc, product_id asc
+        limit #{size}
+
+    </select>
+
+<!--  earliest(오래된 순)은 가격에서 한것과 같이 해주기.  -->
+
+    <select id="cursorLatestPage" parameterType="hashMap"  resultType="com.toyproject2_5.musinsatoy.Item.product.dto.pagination.cursor.ProductCursorPageDto">
+        SELECT p.product_id as productId
+        , p.name as productName
+        , p.price as price
+        , p.rep_img as repImg
+        , p.star_rating as starRating
+        , b.brand_id as brandId
+        , b.name as brandName
+        , p.sales_quantity as salesQuantity
+        FROM product p
+        INNER JOIN brand b
+        ON p.brand_id = b.brand_id
+            <where>
+                <if test ="cursorProductId != null">
+                    ((p.create_datetime  <![CDATA[ < ]]>  (select create_datetime from product where product_id = #{cursorProductId}))
+                    OR (p.create_datetime = (select create_datetime from product where product_id =#{cursorProductId}) AND product_id  <![CDATA[ < ]]> #{cursorProductId}))
+                </if>
+                <if test ="keyword != null">
+                    AND  p.name LIKE CONCAT('%', #{keyword},'%')
+                </if>
+            </where>
+        ORDER BY create_datetime desc, product_id desc
+        limit #{size}
+    </select>
+
+
+
+
+
+    <!-- 페이지 기반 -->
+    <select id="pagePaging" parameterType="hashMap"  resultType="com.toyproject2_5.musinsatoy.Item.product.dto.ProductPageDto">
+         SELECT p.product_id as productId
+                , p.name as productName
+                , p.price as price
+                , p.rep_img as repImg
+                , p.star_rating as starRating
+                , b.brand_id as brandId
+                , b.name as brandName
+        FROM product p
+            INNER JOIN brand b
+            ON p.brand_id = b.brand_id
+            <include refid="search"/>
+
+        <choose>
+            <when test="sortCode eq 'NEW'.toString()">
+                Order By p.create_datetime DESC , p.product_id DESC
+            </when>
+            <when test="sortCode eq 'RANKING'.toString()">
+                Order By p.star_rating DESC, p.product_id DESC
+            </when>
+            <when test="sortCode eq 'SALES'.toString()">
+                Order By p.sales_quantity DESC, p.product_id DESC
+            </when>
+            <when test="sortCode eq 'CHEAP'.toString()">
+                Order By p.price ASC, p.product_id DESC
+            </when>
+                <otherwise>
+                    Order By p.product_id DESC
+                </otherwise>
+        </choose>
+         limit ${size}
+         offset ${offset}
+    </select>
+
+<!--  브랜드 해당 조건에 해당하는 상품 수.  -->
+    <select id="countProduct" parameterType="hashMap" resultType="Integer">
+        SELECT COUNT(*)
+            FROM product p
+            INNER JOIN brand b
+            ON p.brand_id = b.brand_id
+            <include refid="search"/>
+    </select>
+
+
+
+    <!--글자수, 공백으로만 되어있는지는 앞에서 검사하기.-->
+    <update id="updateProduct" parameterType="com.toyproject2_5.musinsatoy.Item.product.dto.ProductUpdateDto">
+        UPDATE product
+            <set>
+                <if test="repImg != null">
+                        rep_img=#{repImg}
+                </if>
+                <if test ="productDescriptionId != null"> product_description_id = #{productDescriptionId}, </if>
+                <if test ="categoryId != null"> category_id = #{categoryId} , </if>
+                <if test="name !=null"> name = #{name} , </if>
+                <if test ="registerManager != null"> register_manager = #{registerManager} , </if>
+                <if test ="price != null"> price = #{price} , </if>
+                <if test ="productStatus != null"> product_status  = #{productStatus} , </if>
+                        modify_datetime = NOW()
+            </set>
+        WHERE
+            product_id = #{productId}
+
+
+
+    </update>
+
+
+    <update id="updateViewCount" parameterType="String">
+        UPDATE product
+            SET view_count = view_count+1 WHERE product_id = #{productId}
+    </update>
+
+
+
+
+
+    <insert id="insert" parameterType="com.toyproject2_5.musinsatoy.Item.product.dto.Product">
+        INSERT INTO product (product_id,
+                             product_description_id,
+                             brand_product_code,
+                             category_id,
+                             brand_id,
+                             name,
+                             rep_img,
+                             price,
+                             product_option_depth,
+                             create_datetime,
+                             modify_datetime,
+                             register_manager
+                             )
+        VALUES ( #{productId}, #{productDescriptionId}, #{brandProductCode}
+               ,#{categoryId}, #{brandId}
+               , #{name}, #{repImg}, #{price}
+               , #{productOptionDepth}
+               , NOW(), NOW()
+               , #{registerManager} )
+
+    </insert>
+
+
+<!-- mapper 안에 절대 "- -" 로 주석처리 하지 말것. -->
+    <insert id="insertTest" parameterType="hashMap">
+        <if test="ProductDescription != null">
+            INSERT INTO product_description (
+                 product_description_id
+                , description
+                , modify_datetime
+                )
+                VALUES(
+                    #{ProductDescription.productDescriptionId}
+                    ,#{ProductDescription.description}
+                    , NOW()
+                )
+            ;
+        </if>
+
+        INSERT  INTO product (
+            product_id
+            , product_description_id
+            , category_id
+            , brand_id
+            , name
+            , rep_img
+            , price
+            , create_datetime
+            , modify_datetime
+            , register_manager
+            )
+            VALUES ( #{Product.productId}, #{Product.productDescriptionId},
+                #{Product.categoryId}
+                , #{Product.brandId}
+                , #{Product.name}, #{Product.repImg}, #{Product.price}
+                , NOW(), NOW()
+                , #{Product.registerManager})
+        ;
+
+
+        INSERT  INTO stock (
+            product_id
+            , size
+            , color
+            , quantity
+            , create_datetime
+        )
+        VALUES
+            <foreach collection="stockList" item="Stock" separator=",">
+            (
+            #{Stock.productId}
+            , #{Stock.size}
+            , #{Stock.color}
+            , #{Stock.quantity}
+            ,  NOW()
+            )
+            </foreach>
+        ;
+
+        <if test="imgList != null">
+            INSERT  INTO product_description_img(
+                product_description_id
+                , name
+                , order_num
+                , path
+                , is_used
+                , kind_of
+                , size
+                , create_datetime
+                , modify_datetime
+            )
+            VALUES
+            <foreach collection="imgList" item="ProductDescriptionImg" separator=",">
+                (
+                #{ProductDescriptionImg.productDescriptionId}
+                , #{ProductDescriptionImg.name}
+                , #{ProductDescriptionImg.orderNum}
+                , #{ProductDescriptionImg.path}
+                , #{ProductDescriptionImg.isUsed}
+                , #{ProductDescriptionImg.kindOf}
+                , #{ProductDescriptionImg.size}
+                ,  NOW()
+                ,  NOW()
+                )
+            </foreach>
+        </if>
+
+
+
+
+    </insert>
+
+    <delete id="deleteByProductId" parameterType="String">
+        DELETE FROM product WHERE product_id = #{productId}
+    </delete>
+
+
+
+</mapper>

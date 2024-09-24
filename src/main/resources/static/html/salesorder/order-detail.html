@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주문 상세</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Helvetica', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1, h3 {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .info-box {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .info-box h4 {
+            font-size: 1.2rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        table {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        th {
+            font-size: 0.9rem;
+            background-color: #f8f8f8;
+            text-align: left;
+            padding: 12px;
+        }
+
+        td {
+            font-size: 0.9rem;
+            padding: 12px;
+            vertical-align: middle;
+        }
+
+        td img {
+            border-radius: 5px;
+            border: 1px solid #eee;
+        }
+
+        .summary-section {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .summary-box {
+            flex: 1;
+            margin-right: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .summary-section {
+                flex-direction: column;
+            }
+            .summary-box {
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+        }
+
+        .button-group {
+            text-align: right;
+        }
+
+        .button-group .btn {
+            margin-left: 10px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .button-group .btn-primary {
+            background-color: #222;
+            border-color: #222;
+        }
+
+        .button-group .btn-primary:hover {
+            background-color: #555;
+            border-color: #555;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>주문 상세 정보</h1>
+
+    <!-- 주문 정보 박스 -->
+    <div id="order-info" class="info-box">
+        <!-- 주문 정보가 여기에 표시됩니다. -->
+    </div>
+
+    <h3 class="mt-4">주문 상품 목록</h3>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>이미지</th> <!-- 상품 이미지 -->
+            <th>상품 이름</th>
+            <th>브랜드</th>
+            <th>옵션</th> <!-- 여러 옵션을 표시 -->
+            <th>가격</th>
+            <th>수량</th>
+        </tr>
+        </thead>
+        <tbody id="product-list">
+        <!-- 주문 상품 정보가 여기에 표시됩니다. -->
+        </tbody>
+    </table>
+
+    <!-- 배송 및 결제 정보 -->
+    <div class="summary-section">
+        <div id="delivery-info" class="summary-box info-box">
+            <h4>배송 정보</h4>
+            <!-- 배송 정보가 여기에 표시됩니다. -->
+        </div>
+
+        <div id="payment-info" class="summary-box info-box">
+            <h4>결제 정보</h4>
+            <!-- 결제 정보가 여기에 표시됩니다. -->
+        </div>
+    </div>
+
+    <div class="button-group">
+        <a href="#" class="btn btn-secondary">뒤로 가기</a>
+        <a href="#" class="btn btn-primary">주문 취소</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('orderId');
+
+        // 상태 코드 숫자를 텍스트로 변환하는 함수
+        function getStatusText(stateCode) {
+            switch (stateCode) {
+                case 0: return '결제 완료';
+                case 3: return '배송 중';
+                case 5: return '배송 완료';
+                case 10: return '주문 취소';
+                case 15: return '환불 완료';
+                case 20: return '반품 요청';
+                case 25: return '반품 완료';
+                case 30: return '교환 신청';
+                case 35: return '교환 완료';
+                default: return '알 수 없음';
+            }
+        }
+
+        if (orderId) {
+            fetch(`http://localhost:8080/api/orders/details/${orderId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const order = data.order;
+                    const productDetails = data.productDetails;
+
+                    const orderInfo = document.getElementById('order-info');
+                    const deliveryInfo = document.getElementById('delivery-info');
+                    const paymentInfo = document.getElementById('payment-info');
+
+                    // 주문 상태 코드를 문자열로 변환
+                    const stateText = getStatusText(order.stateCode);
+
+                    // 주문 정보를 표시
+                    orderInfo.innerHTML = `
+                        <div>
+                            <p><strong>주문 ID:</strong> ${order.orderId}</p>
+                            <p><strong>주문 날짜:</strong> ${new Date(order.orderDatetime).toLocaleString()}</p>
+                            <p><strong>상태:</strong> ${stateText}</p>
+                        </div>
+                    `;
+
+                    // 배송 정보를 표시
+                    deliveryInfo.innerHTML = `
+                        <p><strong>수취인:</strong> ${order.recipient || ''}</p>
+                        <p><strong>전화번호:</strong> ${order.phone || ''}</p>
+                        <p><strong>주소:</strong> ${order.addressA || ''} ${order.addressB || ''}</p>
+                        <p><strong>우편번호:</strong> ${order.postcode || ''}</p>
+                        <p><strong>배송 요청사항:</strong> ${order.deliveryRequest || ''}</p>
+                    `;
+
+                    // 결제 정보를 표시
+                    paymentInfo.innerHTML = `
+                        <p><strong>결제 ID:</strong> ${order.paymentId || ''}</p>
+                        <p><strong>결제 방법:</strong> ${order.paymentMethod || ''}</p>
+                        <p><strong>결제 금액:</strong> ${order.paymentAmount}</p>
+                    `;
+
+                    // 주문 상품 목록을 표시
+                    const productList = document.getElementById('product-list');
+
+                    productDetails.forEach(product => {
+                        const orderProduct = order.products.find(p => p.productId === product.productId);
+                        const options = orderProduct.options.map(option => `
+                            <p><strong>${option.optionCategory}:</strong> ${option.optionName}</p>
+                        `).join('');
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td><img src="${product.repImg}" alt="Product Image" width="100"></td>
+                            <td>${product.name}</td>
+                            <td>${product.brandName}</td>
+                            <td>${options}</td>
+                            <td>${orderProduct.price}</td>
+                            <td>${orderProduct.amount}</td>
+                        `;
+                        productList.appendChild(tr);
+                    });
+                })
+                .catch(error => console.error('Error fetching order details:', error));
+        } else {
+            console.error('No orderId found in URL');
+        }
+    });
+</script>
+</body>
+</html>

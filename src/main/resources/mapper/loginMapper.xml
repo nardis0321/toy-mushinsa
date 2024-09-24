@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.toyproject2_5.musinsatoy.member.login.repository.LoginDao">
+    <!-- 회원 상태 코드 조회 (활동, 잠금, 휴면, 탈퇴) -->
+    <select id="selectStateCode" parameterType="String" resultType="String">
+        SELECT member_state_code
+        FROM member_info
+        WHERE id = #{id}
+    </select>
+
+    <!-- is_admin 조회 -->
+    <select id="selectIsAdmin" parameterType="String" resultType="String">
+        SELECT is_admin
+        FROM member_info
+        WHERE id = #{id}
+    </select>
+
+    <!-- id, password 일치 확인 -->
+    <select id="selectIdPassword" parameterType="map" resultType="Boolean">
+        SELECT
+            CASE
+                WHEN password = #{password} THEN TRUE
+                ELSE FALSE
+                END AS login_status
+        FROM member_info
+        WHERE id = #{id}
+          AND NOT member_state_code = '40004'
+    </select>
+
+    <!-- 로그인 카운트 조회  -->
+    <select id="selectLoginCnt" parameterType="String" resultType="Int">
+        SELECT login_count
+        FROM member_info
+        WHERE id = #{id}
+          AND NOT member_state_code = '40004'
+    </select>
+
+    <!-- 회원 id로 로그인 카운트 증가
+        1. login_count < 0 이면 이상한 값이므로 3으로 변경해서 로그인 시도시 인증 받도록 함
+        2. login_count >= 3 이면 3으로 변경해서 로그인 시도시 인증 받도록 함
+        3. login_count 0~2 이면 로그인 카운트 증가-->
+    <update id="updateLoginCnt" parameterType="String">
+        UPDATE member_info
+        SET modify_datetime = STR_TO_DATE(now(), '%Y-%m-%d %H:%i:%s'),
+            login_count = CASE
+                              WHEN login_count <![CDATA[<]]> 0 THEN 3
+                              WHEN login_count <![CDATA[>=]]> 3 THEN 3
+                              ELSE login_count + 1
+                END
+        WHERE id = #{id}
+    </update>
+
+    <!-- 회원 id로 회원 상태 코드 수정 -->
+    <update id="updateStateCode" parameterType="String">
+        UPDATE member_info
+        SET modify_datetime = STR_TO_DATE(now(), '%Y-%m-%d %H:%i:%s'),
+            member_state_code = #{member_state_code}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 회원 id로 로그인 카운트, 회원 상태 초기화 -->
+    <update id="initMemInfo" parameterType="String">
+        UPDATE member_info
+        SET modify_datetime = STR_TO_DATE(now(), '%Y-%m-%d %H:%i:%s'),
+            member_state_code = '40001',
+            login_count = 0
+        WHERE id = #{id}
+          AND NOT member_state_code = '40004'
+    </update>
+</mapper>

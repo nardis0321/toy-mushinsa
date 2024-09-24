@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.toyproject2_5.musinsatoy.cs.notice.FaqMapper">
+<!--insert-->
+    <insert id="insert" parameterType="com.toyproject2_5.musinsatoy.CS.FAQ.dto.FaqDto">
+        insert into FAQ(faq_category_code, faq_subcategory_id, faq_title, faq_content, writer, is_post)
+            values(#{faq_category_code}, #{faq_subcategory_id}, #{faq_title}, #{faq_content}, #{writer}, #{is_post})
+    </insert>
+<!--read-->
+    <!--모든데이터select(API)-->
+    <select id="selectAllAsc" resultType="com.toyproject2_5.musinsatoy.CS.FAQ.dto.FaqDto">
+        select faq_id as faq_id, faq_category_code as faq_category_code, faq_subcategory_id, faq_title, faq_content, create_datetime, modify_datetime,
+            writer, modifier, is_post
+        from faq
+        order by faq_id asc
+    </select>
+    <!--id로 해당 데이터 가져오기-->
+    <select id="selectById" parameterType="Integer" resultType="com.toyproject2_5.musinsatoy.CS.FAQ.dto.FaqDto">
+        select f.faq_id, f.faq_category_code, f.faq_subcategory_id,
+               s.standard_code_name as faq_category_name, sc.faq_subcategory_name as faq_subcategory_name,
+               f.faq_title, f.faq_content, f.create_datetime, f.modify_datetime, f.writer, f.modifier, f.is_post
+        from FAQ f
+                 join Standard_Code s
+                      on f.faq_category_code = concat(s.standard_code_type_id, s.standard_code)
+                 join FAQ_SubCategory sc
+                      on f.faq_subcategory_id = sc.faq_subcategory_id
+                          and f.faq_category_code = sc.faq_category_code
+        where is_post = 'Y' and faq_id=#{faq_id}
+        order by faq_id desc
+    </select>
+    <!--모든 데이터 id 내림차순 가져오기(테스트용)-->
+    <select id="selectAllDesc" resultType="com.toyproject2_5.musinsatoy.CS.FAQ.dto.FaqDto">
+        select faq_id, faq_category_code, faq_subcategory_id, faq_title, faq_content, create_datetime, modify_datetime,
+               writer, modifier, is_post
+        from FAQ
+        where is_post = 'Y'
+        order by faq_id desc
+    </select>
+    <!-- 모든 데이터 id 내림차순 가져오기 + 카테고리 명-->
+    <select id="selectAllCatDesc" resultType="com.toyproject2_5.musinsatoy.CS.FAQ.dto.FaqDto">
+        select f.faq_id, f.faq_category_code, f.faq_subcategory_id,
+               s.standard_code_name as faq_category_name, sc.faq_subcategory_name as faq_subcategory_name,
+               f.faq_title, f.faq_content, f.create_datetime, f.modify_datetime, f.writer, f.modifier, f.is_post
+        from FAQ f
+            join Standard_Code s
+                on f.faq_category_code = concat(s.standard_code_type_id, s.standard_code)
+            join FAQ_SubCategory sc
+                on f.faq_subcategory_id = sc.faq_subcategory_id
+                and f.faq_category_code = sc.faq_category_code
+        where is_post = 'Y'
+        order by faq_id desc
+    </select>
+    <!--faq_category_code해당되는 faq만 가져오기-->
+    <select id="selectAllCatCodeDesc" parameterType="String" resultType="com.toyproject2_5.musinsatoy.CS.FAQ.dto.FaqDto">
+        select f.faq_id, f.faq_category_code, f.faq_subcategory_id,
+               s.standard_code_name as faq_category_name, sc.faq_subcategory_name as faq_subcategory_name,
+               f.faq_title, f.faq_content, f.create_datetime, f.modify_datetime, f.writer, f.modifier, f.is_post
+        from FAQ f
+                 join Standard_Code s
+                      on f.faq_category_code = concat(s.standard_code_type_id, s.standard_code)
+                 join FAQ_SubCategory sc
+                      on f.faq_subcategory_id = sc.faq_subcategory_id
+                          and f.faq_category_code = sc.faq_category_code
+        where f.faq_category_code = #{faq_category_code} and is_post = 'Y'
+        order by faq_id desc
+    </select>
+    <!--faq_category_code, subcategory_id에 해당되는 faq만 가져오기-->
+    <select id="selectAllCatCodeSubIdDesc" parameterType="map" resultType="com.toyproject2_5.musinsatoy.CS.FAQ.dto.FaqDto">
+        select f.faq_id, f.faq_category_code, f.faq_subcategory_id,
+               s.standard_code_name as faq_category_name, sc.faq_subcategory_name as faq_subcategory_name,
+               f.faq_title, f.faq_content, f.create_datetime, f.modify_datetime, f.writer, f.modifier, f.is_post
+        from FAQ f
+                 join Standard_Code s
+                      on f.faq_category_code = concat(s.standard_code_type_id, s.standard_code)
+                 join FAQ_SubCategory sc
+                      on f.faq_subcategory_id = sc.faq_subcategory_id
+                          and f.faq_category_code = sc.faq_category_code
+        where f.faq_category_code=#{faq_category_code} and f.faq_subcategory_id = #{faq_subcategory_id} and is_post = 'Y'
+        order by faq_id desc
+    </select>
+<!--update-->
+    <select id="update">
+        update FAQ
+        set faq_title=#{faq_title}, modifier=#{modifier}, faq_content=#{faq_content}, faq_category_code=#{faq_category_code},
+            faq_subcategory_id=#{faq_subcategory_id}, modify_datetime = #{modify_datetime}, is_post=#{is_post}
+        where faq_id = #{faq_id}
+    </select>
+<!--delete-->
+    <select id="deleteById">
+        delete from FAQ where faq_id = #{faq_id}
+    </select>
+    <select id="deleteAll">
+        delete from FAQ
+    </select>
+<!--count-->
+    <select id="count" resultType="int">
+        select count(*) from FAQ
+    </select>
+<!--search-->
+    <sql id = "FaqSearchCondition">
+        and is_post = 'Y'
+        and faq_title like concat('%', #{keyword}, '%')
+        or faq_content like concat('%', #{keyword}, '%')
+    </sql>
+    <select id = "searchSelect" parameterType = "com.toyproject2_5.musinsatoy.ETC.FaqSearchCondition" resultType="com.toyproject2_5.musinsatoy.CS.FAQ.dto.FaqDto">
+        select faq_id, faq_category_code, faq_subcategory_id, faq_title, faq_content, create_datetime, modify_datetime,
+               writer, modifier, is_post
+        from FAQ
+        where true
+         <include refid="FaqSearchCondition"/>
+        order by faq_id desc
+    </select>
+    <select id = "searchResultCnt" parameterType = "com.toyproject2_5.musinsatoy.ETC.FaqSearchCondition" resultType = "int">
+        select count(*)
+        from FAQ
+        where true
+        <include refid="FaqSearchCondition"/>
+    </select>
+</mapper>

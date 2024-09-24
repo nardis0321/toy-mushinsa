@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.toyproject2_5.musinsatoy.member.join.repository.AdminBrandDao">
+    <!-- delete All -->
+    <delete id="deleteAll" >
+        DELETE FROM admin_brand
+    </delete>
+
+    <!-- count -->
+    <select id="count" resultType="Int">
+        SELECT count(*)
+        FROM admin_brand
+    </select>
+
+    <!-- admin brand 생성 -->
+    <insert id="insertAdminBrand" parameterType="com.toyproject2_5.musinsatoy.member.join.dto.AdminBrandDto">
+        INSERT INTO admin_brand
+                (
+                 id,
+                 brand_code
+                )
+        VALUES
+            (
+             #{id},
+             #{brand_code}
+            )
+    </insert>
+
+    <!-- admin brand 정보 조회 -->
+    <select id="selectAdminBrand" parameterType="String" resultType="com.toyproject2_5.musinsatoy.member.join.dto.AdminBrandDto">
+        SELECT
+            id,
+            brand_code
+        FROM admin_brand
+        WHERE id = #{id}
+    </select>
+
+</mapper>

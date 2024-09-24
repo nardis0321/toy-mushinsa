@@ -1,0 +1,166 @@
+* {
+    margin : 0;
+    padding : 0;
+}
+
+#header > ul {
+    background-color : black;
+    color: gray;
+}
+
+#header > ul > li {
+    list-style : none;
+    display : inline-block;
+    /*   background-color : blue; */
+}
+
+#header > ul > li > a {
+    text-decoration : none;
+    padding : 10px;
+    display : block;
+    /*   background-color: yellow; */
+}
+
+#header > ul > li > a:visited {
+    color: gray;
+}
+
+#header > ul > li > a:hover {
+    color: white;
+}
+
+#footer {
+    text-align : center;
+    width: 100%;
+}
+
+
+#inner {
+    width: 40px;
+    height: 70px;
+    display: inline-block;
+}
+
+
+
+#item-contents {
+
+    display: flex;
+    /*flex-flow: row wrap;*/
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    /*margin:0 auto;*/
+}
+#center{
+    width: 100%;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.item {
+    /*width: 25%;*/
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 30%;
+    text-align: center;
+    aspect-ratio: 6/5;
+    position: relative;
+    overflow: hidden;
+    flex-direction: row;
+}
+
+.item:after {
+    /* block & content */
+    display: block;
+    content: "";
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.2);
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    opacity: 0;
+}
+
+.imgBox {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+}
+
+.imgBox img {
+    width: 100%;
+    height: 100%;
+    /* 사진이나 비디오의 규격 맞출 때 object-fit 이용하기. */
+    object-fit: cover;
+    z-index: 1;
+}
+
+.textBox {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding: 20px;
+    z-index: 3;
+}
+
+.textBox p {
+    color: white;
+    margin: 5px 0 0;
+}
+
+.textBox__name {
+    font-size: 22px;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(50px);
+}
+
+.textBox__price {
+    font-size: 16px;
+    font-weight: 400;
+    opacity: 0;
+    transform: translateY(50px);
+}
+
+/* 마우스 올렸을 때에 기능 추가하기. */
+.item:hover:after {
+    opacity: 1;
+}
+
+/* 기능 1 : 화면 살짝 불투명 + 화면 커지기. */
+.item:hover .imgBox img {
+    transform: scale(1.1);
+    /* 블러 처리하기. */
+    filter: blur(3px);
+}
+
+/* 기능 2 : 상품 정보 보이면서 위로 올라가기. */
+.item:hover .textBox .textBox__name {
+    opacity: 1;
+    transform: translateY(0px);
+}
+
+/* 기능 2 : 상품 정보 보이면서 위로 올라가기. */
+.item:hover .textBox .textBox__price {
+    opacity: 1;
+    transform: translateY(0px);
+}
+
+/* 자연스럽게 트랜지션 적용하기. */
+.item:after,
+.item .imgBox img,
+.item .textBox__name,
+.item .textBox__price {
+    transition: all 0.4s ease-in-out;
+}
+
+

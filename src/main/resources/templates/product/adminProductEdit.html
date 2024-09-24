@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/mainLayout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <title>상품 수정</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input[type="text"],
+        .form-group select,
+        .form-group input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .form-group input[type="file"] {
+            padding: 8px;
+        }
+
+        .form-group img {
+            max-width: 100%;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+
+        .form-actions {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .form-actions button {
+            padding: 10px 20px;
+            margin-right: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .form-actions button:hover {
+            background-color: #0056b3;
+        }
+
+        .form-actions .secondary {
+            background-color: #6c757d;
+        }
+
+        .form-actions .secondary:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+
+<div class="container">
+    <h1>상품 수정</h1>
+
+    <form id="productForm">
+        <input type="hidden" id="productId" name="productId" th:value="${productData.productId}">
+        <div class="form-group">
+            <label for="productName">상품 이름</label>
+            <input type="text" id="productName" name="productName" th:placeholder="${productData.name}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="category">상품 카테고리</label>
+            <select id="category" class="category-select" onchange="loadSubCategories(this.value, this.options[this.selectedIndex].text)">
+                <!-- 서버에서 가져온 상위 카테고리들로 채워집니다 -->
+
+                <option value="">-- 선택 --</option>
+                <option th:each="val : ${categoryList}" th:value="${val?.categoryId}"
+                        th:utext="${val?.categoryName}">
+                </option>
+            </select>
+        </div>
+        <div id="sub-category-container" style="margin-bottom: 10px"></div>
+
+        <div id="final-category" style="display: none; margin-bottom: 20px">
+            선택된 최종 카테고리: <span id="selected-category"></span>
+        </div>
+
+        <div class="form-group">
+            <label for="productImage">상품 대표 이미지</label>
+            <input type="file" id="productImage" name="productImage" accept="image/*">
+            <img id="productImagePreview" th:src="${productData.repImg}" alt="이미지 미리보기">
+        </div>
+
+        <div class="form-group">
+            <label for="productPrice">상품 가격</label>
+            <input type="number" id="productPrice" name="productPrice" th:placeholder="${productData.price}" required>
+        </div>
+        <div class="form-group">
+            <label for="productStatus">상품 상태</label>
+            <select id="productStatus" name="productStatus" class="form-control">
+                <option value="SELL">판매 중</option>
+                <option value="SOLDOUT">품절</option>
+                <option value="EVENT">이벤트 중</option>
+            </select>
+        </div>
+
+
+
+        <div class="form-actions">
+            <button type="button" onclick="saveProduct()">저장</button>
+            <button type="button" class="secondary" onclick="location.href='/product/description/edit'">상세 설명 변경</button>
+        </div>
+    </form>
+</div>
+
+<script>
+
+    let selectedCategory = ''; // 최종 선택된 카테고리 ID를 저장
+    let selectedCategoryName = ''; // 최종 선택된 카테고리 이름을 저장
+
+    document.getElementById('productImage').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imgPreview = document.getElementById('productImagePreview');
+            imgPreview.src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+    });
+
+
+    function saveProduct() {
+        const productName = document.getElementById('productName').value;
+        const productId = document.getElementById('productId').value;
+        const productCategory = selectedCategory
+        const productPrice = document.getElementById('productPrice').value;
+        const productImage = document.getElementById('productImage').files[0];
+        const productStatus = document.getElementById('productStatus').value;
+
+        const formData ={
+            productId : productId,
+            categoryId : productCategory,
+            repImg : productImage,
+            price : productPrice,
+            productStatus : productStatus
+        }
+
+        if (productImage) {
+            formData.append('productImage', productImage);
+        }
+
+        //기존 s3의 이미지 제거 후 다시 넣기.
+        fetch('/product/update', {
+            method: 'POST',
+            body: JSON.stringify(formData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert('상품이 성공적으로 수정되었습니다.');
+                if (data.updatedImageUrl) {
+                    document.getElementById('productImagePreview').src = data.updatedImageUrl;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('상품 수정에 실패했습니다.');
+            });
+    }
+
+    function loadSubCategories(categoryId, categoryName) {
+        // 선택된 카테고리를 저장
+        selectedCategory = categoryId;
+        selectedCategoryName = categoryName;
+
+        console.log(categoryName);
+        console.log(categoryId);
+
+        // axios로 하위 카테고리 요청
+        axios.get(`/category/${categoryId}/subcategory`)
+            .then(response => {
+                const subCategories = response.data;
+
+                const container = document.getElementById('sub-category-container');
+                container.innerHTML = ''; // 기존 내용을 제거
+
+                if (subCategories.length > 0) {
+                    // 하위 카테고리가 있으면 새로운 select 박스를 생성
+                    const select = document.createElement('select');
+                    select.classList.add('category-select');
+                    select.onchange = function() {
+                        loadSubCategories(this.value, this.options[this.selectedIndex].text);
+                    };
+
+                    // 하위 카테고리 옵션 추가
+                    select.innerHTML = '<option value="">하위 카테고리 선택</option>';
+                    subCategories.forEach(subCategory => {
+                        select.innerHTML += `<option value="${subCategory.categoryId}">${subCategory.categoryName}</option>`;
+                    });
+
+                    container.appendChild(select);
+
+                    // 최종 선택된 카테고리를 숨김
+                    document.getElementById('final-category').style.display = 'none';
+
+                } else {
+                    // 하위 카테고리가 없으면 최종 선택된 카테고리를 설정
+                    document.getElementById('selected-category').innerText = selectedCategoryName;
+                    document.getElementById('final-category').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('하위 카테고리 불러오기 오류:', error);
+                alert('하위 카테고리를 불러오는데 실패했습니다.');
+            });
+    }
+</script>
+</div>
+</body>
+</html>

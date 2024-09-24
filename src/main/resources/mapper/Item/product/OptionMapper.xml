@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="optionMapper">
+
+<insert id="registerOption" parameterType="java.util.List">
+    INSERT INTO product_option (product_id,
+    product_option_id,
+    option_name,
+    option_depth,
+    option_category)
+    VALUES
+    <foreach collection="list" item="item" index="idx" separator=",">
+        (
+        #{item.productId}
+        , #{item.optionId}
+        , #{item.optionName}
+        , #{item.optionDepth}
+        , #{item.optionCategory}
+        )
+    </foreach>
+</insert>
+
+    <select id="findDetailOptionStockByProductId" parameterType="String" resultType="com.toyproject2_5.musinsatoy.Item.product.dto.option.OptionStockDetailDto">
+        select
+            po.product_option_id
+             , po.option_name
+             , po.option_category
+             , s.quantity
+             , s.sale_state
+             , po.option_depth
+        from product_option po
+                 left join stock s
+                           ON po.product_id=s.product_id AND po.product_option_id = s.product_option_id
+        WHERE po.product_id = #{productId}
+    </select>
+
+
+
+</mapper>

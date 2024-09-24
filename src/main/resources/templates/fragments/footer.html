@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<div th:fragment="footer">
+
+    <div id="chatbot-icon">
+        💬
+    </div>
+
+    <!-- 챗봇 창 -->
+    <div id="chatbot-window">
+        <div class="chatbot-header">
+            <h2>챗봇</h2>
+            <button id="close-btn">X</button>
+        </div>
+        <div class="chatbot-body">
+            <div id="chat-log" >
+                <p style ="background-color: #e0f7fa;">안녕하세요! 무엇을 도와드릴까요?</p>
+            </div>
+        </div>
+        <div class="chatbot-footer">
+            <input type="text" id="chat-input" placeholder="메시지를 입력하세요">
+            <button type ="button" id="send-btn">전송</button>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item">
+            <button class="icon-button" onclick="location.href='/category'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                </svg>
+            </button>
+            <p>카테고리</p>
+        </div>
+        <div class="nav-item">
+            <button class="icon-button" onclick="location.href='/snap'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-stars" viewBox="0 0 16 16">
+                    <path d="M7.5 2.5a.5.5 0 0 1 1 0v4.31l1.907-.636a.5.5 0 1 1 .316.949l-2.773.927a.5.5 0 0 1-.635-.398L7.5 2.5z"/>
+                </svg>
+            </button>
+            <p>스냅</p>
+        </div>
+        <div class="nav-item">
+            <button class="icon-button" onclick="location.href='/'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-house" viewBox="0 0 16 16">
+                    <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L2 8.207V13.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V8.207l.646.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM13 7.207V13.5a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5V7.207l5-5z"/>
+                </svg>
+            </button>
+            <p>홈</p>
+        </div>
+        <div class="nav-item">
+            <button class="icon-button" onclick="location.href='/likes'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-heart" viewBox="0 0 16 16">
+                    <path d="M8 3.314C12.438-1.248 23.534 4.735 8 15-7.534 4.735 3.562-1.248 8 3.314z"/>
+                </svg>
+            </button>
+            <p>좋아요</p>
+        </div>
+        <div class="nav-item">
+            <button class="icon-button" onclick="location.href='/my'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-person" viewBox="0 0 16 16">
+                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 1a5 5 0 0 0-4.546 2.916C4.06 13.286 5.523 14 8 14c2.477 0 3.94-.714 4.546-2.084A5 5 0 0 0 8 9z"/>
+                </svg>
+            </button>
+            <p>마이</p>
+        </div>
+    </div>
+    <div id="footer" style="margin-bottom: 100px">
+        <h1>toyproject.2</h1>
+    </div>
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        const chatbotIcon = document.getElementById('chatbot-icon');
+        const chatbotWindow = document.getElementById('chatbot-window');
+        const closeBtn = document.getElementById('close-btn');
+        const overlay = document.createElement('div');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const chatLog = document.getElementById('chat-log');
+
+        overlay.id = 'chatbot-overlay';
+        document.body.appendChild(overlay);
+
+        // 챗봇 아이콘 클릭 시 챗봇 창 열기
+        chatbotIcon.addEventListener('click', function() {
+            chatbotWindow.style.display = 'flex';
+            overlay.style.display = 'block';
+        });
+
+        // 닫기 버튼 클릭 시 챗봇 창 닫기
+        closeBtn.addEventListener('click', function() {
+            chatbotWindow.style.display = 'none';
+            overlay.style.display = 'none';
+        });
+
+        // 챗봇 창 바깥을 클릭하면 닫기
+        overlay.addEventListener('click', function() {
+            chatbotWindow.style.display = 'none';
+            overlay.style.display = 'none';
+        });
+
+        // 챗봇 내부를 클릭할 때는 이벤트 전파를 막아 창이 닫히지 않도록 함
+        chatbotWindow.addEventListener('click', function(event) {
+            event.stopPropagation();  // 이벤트 전파 방지
+        });
+
+        // 전송 버튼 클릭 시 메시지 전송
+        sendBtn.addEventListener('click', function() {
+            sendMessage();
+        });
+
+        // 엔터키를 누르면 메시지 전송
+        chatInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // 메시지 전송 함수
+        async function sendMessage() {
+            const userMessage = chatInput.value.trim();
+            if (userMessage) {
+                data =JSON.stringify({ message: userMessage });
+                console.log(data);
+
+                // 사용자의 메시지를 추가
+                const userMsgElem = document.createElement('p');
+                userMsgElem.textContent = userMessage;
+                chatLog.appendChild(userMsgElem);
+
+                // 입력 창 초기화
+                chatInput.value = '';
+
+                // 챗봇 응답 생성 중 표시
+                const botLoadingElem = document.createElement('p');
+                botLoadingElem.textContent = '응답 생성 중...';
+                botLoadingElem.style.fontStyle = 'italic';
+                chatLog.appendChild(botLoadingElem);
+
+                // 챗 로그 영역을 스크롤 하단으로 이동
+                chatLog.scrollTop = chatLog.scrollHeight;
+
+                // 서버로 비동기 요청 (예: /api/chatbot 엔드포인트에 POST 요청)
+                try {
+                    const response = await fetch('http://127.0.0.1:5000/chatBot', {
+                        // mode: 'no-cors',
+                        method: 'POST',
+                        // credentials : "same-origin",
+                        headers: {'Accept': 'application/json',
+                            'Content-Type': `application/json;charset=UTF-8`
+                        },
+                        body: data
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+
+                        // 로딩 메시지를 지우고 응답 표시
+                        botLoadingElem.remove();
+                        const botMsgElem = document.createElement('p');
+                        botMsgElem.innerHTML = '챗봇 응답: \n' + data.bot; // 서버에서 받아온 응답
+                        botMsgElem.style.backgroundColor = '#e0f7fa';  // 챗봇의 응답 스타일
+                        chatLog.appendChild(botMsgElem);
+
+                        // 챗 로그 영역을 다시 스크롤 하단으로 이동
+                        chatLog.scrollTop = chatLog.scrollHeight;
+                    } else {
+                        throw new Error('서버 응답 오류');
+                    }
+                } catch (error) {
+                    // 오류 처리
+                    botLoadingElem.remove();
+                    const errorMsgElem = document.createElement('p');
+                    errorMsgElem.textContent = '오류가 발생했습니다: ' + error.message;
+                    errorMsgElem.style.color = 'red';
+                    chatLog.appendChild(errorMsgElem);
+                }
+            }
+        }
+    });
+</script>
+</div>
+
+</html>

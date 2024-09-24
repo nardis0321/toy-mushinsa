@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="brandMapper">
+
+    <insert id="insertBrand" parameterType="com.toyproject2_5.musinsatoy.Item.brand.dto.BrandCreateDto">
+        INSERT INTO brand (brand_id
+                          , name
+                          , img
+        )
+        VALUES (
+                 #{brandId}
+               , #{name}
+               , #{img}
+               )
+
+    </insert>
+
+
+
+
+    <select id="findById" parameterType="String" resultType="com.toyproject2_5.musinsatoy.Item.brand.dto.BrandDto">
+        SELECT * FROM brand WHERE brand_id = #{brandId}
+    </select>
+
+    <select id="countAllBrand" resultType="Integer">
+        SELECT Count(*) From brand
+    </select>
+
+
+    <select id="brandListPaging" parameterType="hashMap"  resultType="com.toyproject2_5.musinsatoy.Item.brand.dto.BrandListDto">
+        SELECT b.brand_id
+        , b.name
+        , b.img
+        , ifnull(total_sales, 0) as sales_count
+            FROM brand b
+                LEFT JOIN(
+                    SELECT brand_id ,SUM(sales_quantity) as total_sales
+                     FROM product
+                     group by brand_id
+            ) p
+            ON b.brand_id = p.brand_id
+        ORDER BY p.total_sales desc
+        limit ${size}
+        offset ${offset}
+    </select>
+
+
+
+
+<!-- 나중에 브랜드 이미지 리스트 등록할지 고민. -->
+    <update id="updateBrand" parameterType="com.toyproject2_5.musinsatoy.Item.brand.dto.BrandUpdateDto">
+        UPDATE brand
+        <set>
+            <if test="name != null"> name = #{name} , </if>
+        </set>
+            WHERE brand_id = #{brandId}
+    </update>
+
+    <delete id="deleteById" parameterType="String">
+        DELETE FROM brand WHERE brand_id =#{brand_id}
+    </delete>
+
+
+</mapper>

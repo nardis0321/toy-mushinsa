@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>공지사항 수정</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            width: 50%;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding-top: 10px;
+            padding-bottom:10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            font-size: 16px;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .radio-group {
+            margin-bottom: 15px;
+        }
+
+        input[type="button"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        input[type="button"]:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+
+<h2>공지사항 수정</h2>
+
+<script th:inline="javascript">
+    let msg = [[${msg}]];
+    if(msg === "UPDATE_ERR") {
+        alert("수정에 실패했습니다. 다시 시도하십시오.");
+    }
+</script>
+
+<form th:action="@{|/cs/notice/update/${notice.notice_id}|}" method="post" name="updateForm">
+    <input type="hidden" name="notice_id" th:value="${notice.notice_id}">
+
+    <label for="writer">작성자 :</label>
+    <input type="text" name="writer" th:value="${notice.writer}" readonly>
+
+    <label for="modifier">수정자 :</label>
+    <input type="text" name="modifier" th:value="${notice.modifier}" readonly>
+
+    <label for="notice_title">제목 :</label>
+    <input type="text" name="notice_title" th:value="${notice.notice_title}">
+
+    <label for="notice_content">내용 :</label>
+    <textarea name="notice_content" cols="30" rows="10" th:text="${notice.notice_content}"></textarea>
+
+    <div class="radio-group">
+        <label>공지 상단 고정 :</label>
+        <input type="radio" name="is_top_post" value="Y"> Y
+        <input type="radio" name="is_top_post" value="N" checked> N
+    </div>
+
+    <div class="radio-group">
+        <label>공지 표시 :</label>
+        <input type="radio" name="is_post" value="Y" checked> Y
+        <input type="radio" name="is_post" value="N"> N
+    </div>
+
+    <input type="button" value="수정" onclick="notice_update()">
+</form>
+
+<script th:inline="javascript">
+    const notice_update = () => {
+        if (!(confirm("해당 내용으로 수정하시겠습니까?"))) return;
+        document.updateForm.submit();
+    }
+</script>
+
+</body>
+</html>

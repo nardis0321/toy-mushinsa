@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.toyproject2_5.musinsatoy.salesorder.dao.SalesOrderProductOptionMapper">
+    <!--CRUD 순서로 표기-->
+    <!--    CREATE-->
+    <insert id="insert" parameterType="SalesOrderProductOption">
+        INSERT INTO sales_order_product_option
+        (
+         `order_id`
+        ,`product_id`
+        ,`option_id`
+        ,`option_category`
+        ,`option_name`
+        ,`option_depth`
+        )
+        VALUES
+            (
+             #{orderId}
+            ,#{productId}
+            ,#{optionId}
+            ,#{optionCategory}
+            ,#{optionName}
+            ,#{optionDepth}
+            )
+    </insert>
+
+    <!--    READ-->
+    <!--    row수 세기-->
+    <select id="count" resultType="int">
+        SELECT count(*)
+        FROM sales_order_product_option
+    </select>
+
+    <!--    주문, 상품 아이디로 옵션 전체 검색-->
+    <select id="selectById"
+            parameterType="SalesOrderProductOptionDTOwithOrderIdAndProductId"
+            resultType="SalesOrderProductOption">
+        SELECT *
+        FROM    sales_order_product_option
+        WHERE   order_id = #{orderId}
+            AND product_id=#{productId}
+        ORDER BY option_id
+    </select>
+
+    <!--    DELETE-->
+    <!--    전부 삭제 / 테스트에서 활용 -->
+    <delete id="deleteAll">
+        DELETE FROM sales_order_product_option;
+    </delete>
+</mapper>

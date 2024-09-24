@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mushinsa</title>
+</head>
+<body>
+<h1>index.html</h1>
+<!-- 로그인 여부에 따라 로그인/로그아웃 링크를 표시 -->
+<div>
+    <a href="#" th:if="${id == null}" th:href="@{/member/login}">Login</a>
+    <a href="#" th:if="${id != null}" th:href="@{/member/logout}">Logout</a>
+</div>
+
+<!-- 로그인한 사용자의 ID를 화면에 표시 -->
+<div th:if="${session.id != null}">
+    <p>Welcome, <span th:text="${session.id}">User</span></p>
+</div>
+
+<!-- 로그인한 사용자가 admin일 경우 관리자 유형을 화면에 표시 -->
+<div th:if="${session.isAdmin != null}">
+    <p>
+        <span th:if="${session.isAdmin == 'A'}">홈페이지 관리자</span>
+        <span th:if="${session.isAdmin == 'B'}">
+            브랜드 관리자 (Brand: <span th:text="${session.brand}"></span>)
+        </span>
+    </p>
+</div>
+
+<h2>INDEX</h2>
+<a href="#">1:1문의</a>
+<a href="/cs/faq/list">FAQ</a>
+<a href="/cs/notice/list">공지사항</a>
+</body>
+</html>
+

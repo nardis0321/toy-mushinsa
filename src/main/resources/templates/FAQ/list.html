@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>FAQ</title>
+    <style>
+        table{
+            width:1000px;
+            border-collapse: collapse;
+        }
+        /* 각 열의 너비 */
+        th:nth-child(1), td:nth-child(1) { width: 10%; } /* 번호 열 */
+        th:nth-child(2), td:nth-child(2) { width: 10%; } /* 문의유형 열 */
+        th:nth-child(3), td:nth-child(3) { width: 45%; } /* 제목 열 */
+        th:nth-child(4), td:nth-child(4) { width: 15%; } /* 작성자 열 */
+        th:nth-child(5), td:nth-child(5) { width: 20%; } /* 작성일 열 */
+
+        table, tr, td, th {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: black;
+            color: white;
+        }
+        a {
+            text-decoration: none;
+            color : black;
+        }
+        a:link {
+            color : black;
+        }
+        a:visited{
+            color : black;
+        }
+        .thick-border th, .thick-border td {
+            border: 3px solid black;
+        }
+        .category-buttons {
+            margin-bottom: 20px;
+        }
+        .category-buttons button, .subcategory-buttons button {
+            padding: 10px;
+            margin-right: 5px;
+            border: 1px solid #ccc;
+            background-color: white;
+            cursor: pointer;
+        }
+        .category-buttons button.active, .subcategory-buttons button.active {
+            background-color: lightgrey;
+        }
+
+        .subcategory-buttons {
+            margin-top: 10px;
+            display: none; /* 서브카테고리 숨김*/
+            padding-bottom : 20px;
+        }
+
+        /* 중앙 정렬을 위한 스타일 */
+        .center-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 검색바 스타일 */
+        .search-form {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .search-input {
+            width: 300px;
+            padding: 10px;
+            border: 2px solid black;
+            border-radius: 0;
+            background-color: #f0f0f0;
+            color: black;
+            font-size: 16px;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #666;
+        }
+        .search-button {
+            padding: 10px 20px;
+            background-color: black;
+            color: white;
+            border: 2px solid black;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .search-button:hover {
+            background-color: #333;
+        }
+
+        /* 홈 버튼 스타일 */
+        .home-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .home-button button {
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .home-button img {
+            width: 30px;
+            height: 30px;
+        }
+
+        /* 모달 스타일 */
+        .modal {
+            display: none; /* 기본적으로 숨김 */
+            position: fixed;
+            z-index: 1;
+            right: 20px;
+            bottom: 20px;
+            width: 400px;
+            height: 600px;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .close {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* 챗봇 버튼 스타일 */
+        .chatbot-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: white;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .chatbot-button img {
+            width: 50px;
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+<div class = "center-container">
+    <h2>FAQ</h2>
+    <div class="home-button">
+        <button onclick="location.href='http://localhost:8080'">
+            <img src="https://cdn-icons-png.flaticon.com/512/25/25694.png" alt="홈 아이콘">
+        </button>
+    </div>
+
+    <!-- 검색 폼 -->
+    <form th:action="@{/cs/faq/searchList}" method="get" class="search-form">
+        <input type="text" name="q" placeholder="검색어를 입력하세요" class="search-input">
+        <button type="submit" class="search-button">검색</button>
+    </form>
+
+    <!-- 메인 카테고리 버튼들 -->
+    <div class="category-buttons">
+        <button th:classappend="${category_code == null} ? 'active' : ''" onclick="location.href='/cs/faq/list'">전체</button>
+        <button th:classappend="${category_code == '30001'} ? 'active' : ''" onclick="location.href='/cs/faq/list/30001'">배송</button>
+        <button th:classappend="${category_code == '30002'} ? 'active' : ''" onclick="location.href='/cs/faq/list/30002'">교환/취소(반품)</button>
+        <button th:classappend="${category_code == '30003'} ? 'active' : ''" onclick="location.href='/cs/faq/list/30003'">서비스</button>
+        <button th:classappend="${category_code == '30004'} ? 'active' : ''" onclick="location.href='/cs/faq/list/30004'">주문/결제</button>
+        <button th:classappend="${category_code == '30005'} ? 'active' : ''" onclick="location.href='/cs/faq/list/30005'">상품확인</button>
+        <button th:classappend="${category_code == '30006'} ? 'active' : ''" onclick="location.href='/cs/faq/list/30006'">회원 정보</button>
+    </div>
+
+    <!-- 서브카테고리 버튼들 -->
+    <div class="subcategory-buttons" id="deliverySubCategories" style="display: none;">
+        <button th:classappend="${subcategory_id == null} ? 'active' : ''" onclick="location.href='/cs/faq/list/30001'">전체</button>
+        <button th:classappend="${subcategory_id == 1} ? 'active' : ''" onclick="location.href='/cs/faq/list/30001/1'">배송 일반</button>
+        <button th:classappend="${subcategory_id == 2} ? 'active' : ''" onclick="location.href='/cs/faq/list/30001/2'">기타</button>
+        <button th:classappend="${subcategory_id == 3} ? 'active' : ''" onclick="location.href='/cs/faq/list/30001/3'">예약 배송</button>
+        <button th:classappend="${subcategory_id == 4} ? 'active' : ''" onclick="location.href='/cs/faq/list/30001/4'">무탠 픽업</button>
+        <button th:classappend="${subcategory_id == 5} ? 'active' : ''" onclick="location.href='/cs/faq/list/30001/5'">주문제작 배송</button>
+        <button th:classappend="${subcategory_id == 6} ? 'active' : ''" onclick="location.href='/cs/faq/list/30001/6'">부티크 배송</button>
+    </div>
+
+    <div class="subcategory-buttons" id="exchangeSubCategories" style="display: none;">
+        <button th:classappend="${subcategory_id == null} ? 'active' : ''" onclick="location.href='/cs/faq/list/30002'">전체</button>
+        <button th:classappend="${subcategory_id == 7} ? 'active' : ''" onclick="location.href='/cs/faq/list/30002/7'">취소/반품(환불)</button>
+        <button th:classappend="${subcategory_id == 8} ? 'active' : ''" onclick="location.href='/cs/faq/list/30002/8'">교환/반품</button>
+        <button th:classappend="${subcategory_id == 9} ? 'active' : ''" onclick="location.href='/cs/faq/list/30002/9'">무탠 픽업 취소/환불</button>
+    </div>
+
+    <div class="subcategory-buttons" id="serviceSubCategories" style="display: none;">
+        <button th:classappend="${subcategory_id == null} ? 'active' : ''" onclick="location.href='/cs/faq/list/30003'">전체</button>
+        <button th:classappend="${subcategory_id == 10} ? 'active' : ''" onclick="location.href='/cs/faq/list/30003/10'">혜택</button>
+        <button th:classappend="${subcategory_id == 11} ? 'active' : ''" onclick="location.href='/cs/faq/list/30003/11'">고객센터</button>
+        <button th:classappend="${subcategory_id == 12} ? 'active' : ''" onclick="location.href='/cs/faq/list/30003/12'">AS</button>
+        <button th:classappend="${subcategory_id == 13} ? 'active' : ''" onclick="location.href='/cs/faq/list/30003/13'">기타</button>
+        <button th:classappend="${subcategory_id == 14} ? 'active' : ''" onclick="location.href='/cs/faq/list/30003/14'">프로모션/이벤트</button>
+        <button th:classappend="${subcategory_id == 15} ? 'active' : ''" onclick="location.href='/cs/faq/list/30003/15'">웹/앱 이용 문의</button>
+        <button th:classappend="${subcategory_id == 16} ? 'active' : ''" onclick="location.href='/cs/faq/list/30003/16'">후기</button>
+        <button th:classappend="${subcategory_id == 17} ? 'active' : ''" onclick="location.href='/cs/faq/list/30003/17'">무쉰사 스탠다드</button>
+        <button th:classappend="${subcategory_id == 18} ? 'active' : ''" onclick="location.href='/cs/faq/list/30003/18'">부티크</button>
+        <button th:classappend="${subcategory_id == 19} ? 'active' : ''" onclick="location.href='/cs/faq/list/30003/19'">무쉰사 전문관</button>
+        <button th:classappend="${subcategory_id == 20} ? 'active' : ''" onclick="location.href='/cs/faq/list/30003/20'">PLUS 배송</button>
+        <button th:classappend="${subcategory_id == 21} ? 'active' : ''" onclick="location.href='/cs/faq/list/30003/21'">무쉰사 테라스</button>
+    </div>
+
+    <div class="subcategory-buttons" id="orderSubCategories" style="display: none;">
+        <button th:classappend="${subcategory_id == null} ? 'active' : ''" onclick="location.href='/cs/faq/list/30004'">전체</button>
+        <button th:classappend="${subcategory_id == 22} ? 'active' : ''" onclick="location.href='/cs/faq/list/30004/22'">기타</button>
+        <button th:classappend="${subcategory_id == 23} ? 'active' : ''" onclick="location.href='/cs/faq/list/30004/23'">결제수단</button>
+        <button th:classappend="${subcategory_id == 24} ? 'active' : ''" onclick="location.href='/cs/faq/list/30004/24'">주문</button>
+        <button th:classappend="${subcategory_id == 25} ? 'active' : ''" onclick="location.href='/cs/faq/list/30004/25'">무쉰사페이</button>
+    </div>
+
+    <div class="subcategory-buttons" id="productSubCategories" style="display: none;">
+        <button th:classappend="${subcategory_id == null} ? 'active' : ''" onclick="location.href='/cs/faq/list/30005'">전체</button>
+        <button th:classappend="${subcategory_id == 26} ? 'active' : ''" onclick="location.href='/cs/faq/list/30005/26'">불량/하자</button>
+        <button th:classappend="${subcategory_id == 27} ? 'active' : ''" onclick="location.href='/cs/faq/list/30005/27'">상품 문의</button>
+        <button th:classappend="${subcategory_id == 28} ? 'active' : ''" onclick="location.href='/cs/faq/list/30005/28'">직매입/입점</button>
+    </div>
+
+    <div class="subcategory-buttons" id="customerSubCategories" style="display: none;">
+        <button th:classappend="${subcategory_id == null} ? 'active' : ''" onclick="location.href='/cs/faq/list/30006'">전체</button>
+        <button th:classappend="${subcategory_id == 29} ? 'active' : ''" onclick="location.href='/cs/faq/list/30006/29'">탈퇴/기타</button>
+        <button th:classappend="${subcategory_id == 30} ? 'active' : ''" onclick="location.href='/cs/faq/list/30006/30'">로그인/정보</button>
+        <button th:classappend="${subcategory_id == 31} ? 'active' : ''" onclick="location.href='/cs/faq/list/30006/31'">가입/인증</button>
+    </div>
+    <!-- FAQ 리스트 테이블 -->
+    <table>
+        <tr class="thick-border">
+            <th>번호</th>
+            <th>문의유형</th>
+            <th>제목</th>
+            <th>작성자</th>
+            <th>작성일</th>
+        </tr>
+        <tr th:each="faq: ${faqDtoDescList}">
+            <td th:text="${faq.faq_id}"></td>
+            <td th:text="${faq.faq_category_name}"></td>
+            <td>
+                <a th:text="${faq.faq_title}" th:href="@{|/cs/faq/${faq.faq_id}|}"></a>
+            </td>
+            <td th:text="${faq.writer}"></td>
+            <td th:text="${faq.create_datetime}"></td>
+        </tr>
+    </table><br>
+</div>
+<!-- 글쓰기 버튼 -->
+<button id="writeNewBtn" th:onclick="|location.href='@{/cs/faq/insert}'|">글쓰기</button><br>
+<!-- 챗봇 버튼 -->
+<button class="chatbot-button" id="chatbotBtn">
+    <img src="https://cdn-icons-png.flaticon.com/512/5291/5291454.png" alt="챗봇 아이콘">
+</button>
+<!-- 모달창 -->
+<div id="chatbotModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <!-- 챗봇을 표시할 iframe -->
+        <iframe src="http://localhost:5000" width="100%" height="100%" frameborder="0"></iframe>
+    </div>
+</div>
+
+<!-- JavaScript 로직 -->
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        const faqCategoryCode = [[${category_code}]]; // 현재 페이지의 faq_category_code 값
+
+        // 해당 카테고리에 맞는 서브카테고리를 보여줍니다.
+        if (faqCategoryCode === '30001') {
+            document.getElementById('deliverySubCategories').style.display = 'block';
+        } else if (faqCategoryCode === '30002') {
+            document.getElementById('exchangeSubCategories').style.display = 'block';
+        } else if (faqCategoryCode === '30003') {
+            document.getElementById('serviceSubCategories').style.display = 'block';
+        } else if (faqCategoryCode === '30004') {
+            document.getElementById('orderSubCategories').style.display = 'block';
+        } else if (faqCategoryCode === '30005') {
+            document.getElementById('productSubCategories').style.display = 'block';
+        } else if (faqCategoryCode === '30006') {
+            document.getElementById('customerSubCategories').style.display = 'block';
+        }
+        // 추가적인 카테고리에 대한 로직 추가 가능
+    });
+</script>
+<script th:inline="javascript">
+    let msg = [[${msg}]];
+    if(msg === "INSERT_OK") {
+        alert("정상적으로 등록되었습니다.");
+    }
+    if(msg === "DELETE_OK") {
+        alert("정상적으로 삭제되었습니다.");
+    }
+    if(msg === "LIST_ERR") {
+        alert("표시할 내용이 없습니다.");
+    }
+    if(msg === "READ_ERR") {
+        alert("해당게시물이 존재하지 않습니다.");
+    }
+    if(msg === "UPDATE_MV_ERR") {
+        alert("업데이트할 게시물을 찾지 못했습니다.");
+    }
+    if(msg === "NOT_ADMIN") {
+        alert("권한이 없습니다.");
+    }
+    if(msg === "NOT_SIGNED_IN") {
+        alert("로그인을 해주세요.");
+    }
+    if(msg === "FAQ_INSERT_MV_ERROR"){
+        alert("입력을 수행할 수 없습니다. 다시 시도해주십시오.")
+    }
+
+    //모달창 로직
+    document.addEventListener("DOMContentLoaded", function() {
+        // 모달 열기 버튼 및 닫기 버튼 요소들
+        const modal = document.getElementById("chatbotModal");
+        const btn = document.getElementById("chatbotBtn");
+        const span = document.getElementsByClassName("close")[0];
+
+        // 챗봇 버튼을 클릭하면 모달을 보여줍니다.
+        btn.onclick = function() {
+            modal.style.display = "flex";
+        };
+
+        // X 버튼을 클릭하면 모달을 닫습니다.
+        span.onclick = function() {
+            modal.style.display = "none";
+        };
+
+        // 모달 바깥을 클릭하면 모달을 닫습니다.
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        };
+    });
+</script>
+</body>
+</html>

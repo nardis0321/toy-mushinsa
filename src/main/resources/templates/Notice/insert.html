@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>공지사항 작성</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            width: 50%;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            font-size: 16px;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .radio-group {
+            margin-bottom: 15px;
+        }
+
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #555;
+        }
+
+        .radio-group label {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>공지사항 작성</h2>
+
+<script>
+    let msg = "[[${msg}]]";
+    if(msg === "INSERT_OK") alert("정상적으로 등록되었습니다.");
+    if(msg === "INSERT_ERR") alert("게시물 등록에 실패하였습니다. 다시 시도해 주세요.");
+</script>
+
+<form action="/cs/notice/insert" method="post">
+    <label for="notice_title">제목 :</label>
+    <input type="text" name="notice_title" th:value="${noticeDto != null ? noticeDto.notice_title : ''}">
+
+    <label for="writer">작성자 :</label>
+    <input type="text" name="writer" th:value="${member_Id}" readonly>
+
+    <label for="notice_content">내용 :</label>
+    <textarea name="notice_content" cols="30" rows="10" th:text="${noticeDto != null ? noticeDto.notice_content : ''}"></textarea>
+
+    <div class="radio-group">
+        <label>공지 상단 고정 :</label>
+        <input type="radio" name="is_top_post" value="Y"> Y
+        <input type="radio" name="is_top_post" value="N" checked> N
+    </div>
+
+    <div class="radio-group">
+        <label>공지 표시 :</label>
+        <input type="radio" name="is_post" value="Y" checked> Y
+        <input type="radio" name="is_post" value="N"> N
+    </div>
+
+    <input type="submit" value="작성">
+</form>
+
+</body>
+</html>

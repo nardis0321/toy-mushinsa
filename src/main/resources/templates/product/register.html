@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/mainLayout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상품 등록</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        /* 기본 스타일 설정 */
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin: 10px 0 5px;
+        }
+        input, textarea {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input[type="file"] {
+            padding: 0;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: black;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .preview-container {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            min-height: 150px;
+        }
+        .preview-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            padding: 5px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            cursor: move;
+        }
+        .preview-item img {
+            max-width: 100px;
+            margin-right: 10px;
+        }
+        .preview-item button {
+            margin-left: auto;
+            background-color: #dc3545;
+        }
+        .preview-item button:hover {
+            background-color: #c82333;
+        }
+        .drag-over {
+            border: 2px dashed #000;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container">
+        <h1>상품 등록</h1>
+        <form id="productForm" method="post">
+            <label for="name">상품 이름:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="brandProductCode">상품 Id:</label>
+            <input type="text" id="brandProductCode" name="brandProductCode" required>
+            <div th:unless="${session.brand.equals('NONE')}">
+                <label for="brandId" th:text="|브랜드 ID : ${session.brand}|">브랜드 Id:</label>
+                <input type="hidden" id="brandId" name="brandId" th:value="${session.brand}">
+            </div>
+            <div th:if="${session.brand.equals('NONE')}">
+                <label for="brandId">브랜드 Id:</label>
+                <input type="text" id="brandId" name="brandId" required>
+            </div>
+
+            <label for="category">카테고리 선택:</label>
+            <select id="category" class="category-select">
+                <option value="">-- 선택 --</option>
+                <option th:each="val : ${categoryList}" th:value="${val?.categoryId}" th:utext="${val?.categoryName}">
+                </option>
+            </select>
+            <div id="sub-category-container"></div>
+
+            <div id="final-category" style="display: none;">
+                선택된 최종 카테고리: <span id="selected-category"></span>
+            </div>
+
+            <label for="descriptionId">상품 설명 Id:</label>
+            <input type="text" id="descriptionId" name="descriptionId" required>
+
+            <label for="description">상품 설명:</label>
+            <textarea id="description" name="description" rows="4" required></textarea>
+
+            <label for="managerName">등록자 이름:</label>
+            <input type="text" id="managerName" name="managerName" required>
+
+            <!-- 옵션 추가 -->
+            <div id="option-container">
+                <div class="option-group">
+                    <label for="optionCategory-1">옵션 카테고리 1:</label>
+                    <input type="text" id="optionCategory-1" class="option-category" placeholder="예: 사이즈">
+
+                    <label for="option-1">옵션 1:</label>
+                    <input type="text" id="option-1" class="option-input" placeholder="예: XL, L, M">
+                </div>
+            </div>
+            <button id="add-option" type="button">옵션 추가하기</button>
+            <button id="generate-combinations" type="button">조합 생성</button>
+
+            <div id="result" style="display:none;">
+                <h2>옵션 조합 결과</h2>
+                <ul id="combinations-list"></ul>
+            </div>
+
+            <label for="price">상품 가격:</label>
+            <input type="number" id="price" name="price" step="0.01" required>
+
+            <label for="repImg">상품 대표 이미지:</label>
+            <input type="file" id="repImg" name="repImg" accept="image/*" multiple>
+
+            <label for="desImgs">상품 상세 이미지:</label>
+            <input type="file" id="desImgs" name="desImgs" accept="image/*" multiple>
+
+            <label for="represenImgs">상품 추가 이미지:</label>
+            <input type="file" id="represenImgs" name="represenImgs" accept="image/*" multiple>
+
+            <div class="preview-container" id="mainImagePreview">
+                <p>대표 이미지 미리보기:</p>
+            </div>
+            <div class="preview-container" id="detailImagesPreview">
+                <p>상세 이미지 미리보기:</p>
+            </div>
+            <div class="preview-container" id="additionalImagesPreview">
+                <p>추가 이미지 미리보기:</p>
+            </div>
+
+            <button id="submit" type="button">등록</button>
+        </form>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let selectedCategory = ''; // 최종 선택된 카테고리 ID를 저장
+            let selectedCategoryName = ''; // 최종 선택된 카테고리 이름을 저장
+            let optionCount = 1;
+            let optionCategories = [];
+            let options = [];
+            let combinations = [];
+
+            // 카테고리 선택 시, 서브 카테고리 로드하는 이벤트 등록
+            const categorySelect = document.getElementById('category');
+            categorySelect.addEventListener('change', function() {
+                const categoryId = this.value;
+                const categoryName = this.options[this.selectedIndex].text;
+                loadSubCategories(categoryId, categoryName);
+            });
+
+            function loadSubCategories(categoryId, categoryName) {
+                // 선택된 카테고리를 저장
+                selectedCategory = categoryId;
+                selectedCategoryName = categoryName;
+
+                console.log(categoryName);
+
+                // axios로 하위 카테고리 요청
+                axios.get(`/category/${categoryId}/subcategory`)
+                    .then(response => {
+                        const subCategories = response.data;
+
+                        const container = document.getElementById('sub-category-container');
+                        container.innerHTML = ''; // 기존 내용을 제거
+
+                        if (subCategories.length > 0) {
+                            // 하위 카테고리가 있으면 새로운 select 박스를 생성
+                            const select = document.createElement('select');
+                            select.classList.add('category-select');
+                            select.onchange = function() {
+                                loadSubCategories(this.value, this.options[this.selectedIndex].text);
+                            };
+
+                            // 하위 카테고리 옵션 추가
+                            select.innerHTML = '<option value="">하위 카테고리 선택</option>';
+                            subCategories.forEach(subCategory => {
+                                select.innerHTML += `<option value="${subCategory.categoryId}">${subCategory.categoryName}</option>`;
+                            });
+
+                            container.appendChild(select);
+
+                            // 최종 선택된 카테고리를 숨김
+                            document.getElementById('final-category').style.display = 'none';
+
+                        } else {
+                            // 하위 카테고리가 없으면 최종 선택된 카테고리를 설정
+                            document.getElementById('selected-category').innerText = selectedCategoryName;
+                            document.getElementById('final-category').style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('하위 카테고리 불러오기 오류:', error);
+                        alert('하위 카테고리를 불러오는데 실패했습니다.');
+                    });
+            }
+
+            // 옵션 추가하기 버튼
+            document.getElementById('add-option').addEventListener('click', () => {
+                if (optionCount >= 5) {
+                    alert("최대 5개의 옵션 카테고리만 추가할 수 있습니다.");
+                    return;
+                }
+                optionCount++;
+                const optionContainer = document.getElementById('option-container');
+                const newOptionGroup = document.createElement('div');
+                newOptionGroup.className = 'option-group';
+                newOptionGroup.innerHTML = `
+                        <label for="optionCategory-${optionCount}">옵션 카테고리 ${optionCount}:</label>
+                        <input type="text" id="optionCategory-${optionCount}" class="option-category" placeholder="예: 색상">
+
+                        <label for="option-${optionCount}">옵션 ${optionCount}:</label>
+                        <input type="text" id="option-${optionCount}" class="option-input" placeholder="예: Blue, Black">
+                    `;
+                optionContainer.appendChild(newOptionGroup);
+            });
+
+            // 조합 생성 버튼
+            document.getElementById('generate-combinations').addEventListener('click', () => {
+                optionCategories = [];
+                options = [];
+                const optionCategoryInputs = document.querySelectorAll('.option-category');
+                const optionInputs = document.querySelectorAll('.option-input');
+
+                optionCategoryInputs.forEach(input => {
+                    optionCategories.push(input.value.trim());
+                });
+
+                optionInputs.forEach(input => {
+                    let values = input.value.split(',').map(value => value.trim());
+                    options.push(values);
+                });
+
+                // 옵션 조합 생성
+                combinations = generateCombinations(options);
+
+                // 결과를 UI에 표시
+                const combinationsList = document.getElementById('combinations-list');
+                combinationsList.innerHTML = '';  // 이전 결과 초기화
+                combinations.forEach((combination, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                            ${combination.join('/')}
+                            <label>재고: <input type="number" class="inventory-input" data-index="${index}" min="0" value="0"></label>
+                        `;
+                    combinationsList.appendChild(li);
+                });
+
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('submit').style.display = 'inline-block';
+            });
+
+            // 옵션 조합 생성 함수
+            function generateCombinations(arrays) {
+                // 먼저 첫 번째 배열을 acc에 할당합니다.
+                let acc = arrays[0].map(item => [item]);
+
+                // 두 번째 배열부터 순차적으로 처리합니다.
+                for (let i = 1; i < arrays.length; i++) {
+                    const res = [];
+                    acc.forEach(a => {
+                        arrays[i].forEach(c => {
+                            res.push([...a, c]);
+                        });
+                    });
+                    acc = res; // 결과를 다음 반복에서 사용할 acc로 설정합니다.
+                }
+
+                return acc;
+            }
+
+
+
+            function handleFileSelect(event, previewContainerId) {
+                var files = event.target.files;
+                var previewContainer = document.getElementById(previewContainerId);
+
+                previewContainer.innerHTML = '';
+
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    var reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        var img = document.createElement('img');
+                        img.src = e.target.result;
+
+                        var previewItem = document.createElement('div');
+                        previewItem.classList.add('preview-item');
+                        previewItem.draggable = true;
+                        previewItem.dataset.index = previewContainer.children.length;
+
+                        var deleteButton = document.createElement('button');
+                        deleteButton.innerText = '삭제';
+                        deleteButton.type = 'button';
+                        deleteButton.addEventListener('click', function() {
+                            previewContainer.removeChild(previewItem);
+                        });
+
+                        previewItem.appendChild(img);
+                        previewItem.appendChild(deleteButton);
+                        previewContainer.appendChild(previewItem);
+                    }
+
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            document.getElementById('repImg').addEventListener('change', function(event) {
+                handleFileSelect(event, 'mainImagePreview');
+            });
+
+            document.getElementById('desImgs').addEventListener('change', function(event) {
+                handleFileSelect(event, 'detailImagesPreview');
+            });
+
+            document.getElementById('represenImgs').addEventListener('change', function(event) {
+                handleFileSelect(event, 'additionalImagesPreview');
+            });
+
+            function enableDragAndDrop(previewContainer) {
+                previewContainer.addEventListener('dragstart', function(event) {
+                    if (event.target.classList.contains('preview-item')) {
+                        event.dataTransfer.setData('text/plain', event.target.dataset.index);
+                        event.target.classList.add('dragging');
+                    }
+                });
+
+                previewContainer.addEventListener('dragover', function(event) {
+                    event.preventDefault();
+                    event.target.classList.add('drag-over');
+                });
+
+                previewContainer.addEventListener('dragleave', function(event) {
+                    event.target.classList.remove('drag-over');
+                });
+
+                previewContainer.addEventListener('drop', function(event) {
+                    event.preventDefault();
+                    event.target.classList.remove('drag-over');
+
+                    var oldIndex = event.dataTransfer.getData('text/plain');
+                    var newIndex = Array.from(previewContainer.children).indexOf(event.target);
+
+                    if (newIndex !== -1 && oldIndex !== newIndex) {
+                        var items = Array.from(previewContainer.children);
+                        var draggedItem = items[oldIndex];
+                        previewContainer.insertBefore(draggedItem, items[newIndex]);
+                        items.forEach((item, index) => item.dataset.index = index);
+                    }
+                });
+
+                previewContainer.addEventListener('dragend', function(event) {
+                    event.target.classList.remove('dragging');
+                });
+            }
+
+            enableDragAndDrop(document.getElementById('mainImagePreview'));
+            enableDragAndDrop(document.getElementById('detailImagesPreview'));
+            enableDragAndDrop(document.getElementById('additionalImagesPreview'));
+
+
+            document.getElementById('submit').addEventListener('click', () => {
+                const inventoryInputs = document.querySelectorAll('.inventory-input');
+                let stockOption = [];
+                let dImgs = [];
+                let rImgs = [];
+
+                inventoryInputs.forEach((input, index) => {
+                    const quantity = parseInt(input.value);
+                    const optionName = combinations[index].join('/');
+                    stockOption.push({ optionName, quantity });
+                });
+
+                const productDto = {
+                    brandProductCode: document.getElementById('brandProductCode').value,
+                    name: document.getElementById('name').value,
+                    brandId: document.getElementById('brandId').value,
+                    productDescriptionDto: {
+                        productDescriptionId: document.getElementById('descriptionId').value,
+                        description: document.getElementById('description').value
+                    },
+                    categoryId: selectedCategory,
+                    price: document.getElementById('price').value,
+                    managerName: document.getElementById('managerName').value,
+                    stockOption :stockOption,
+                    optionCategory: optionCategories,
+                    option: options,
+                };
+
+                console.log("JSON 데이터:", JSON.stringify(productDto));
+
+                const representImg = document.getElementById('repImg').files[0];
+                const descriptionImgs = document.getElementById('desImgs').files;
+                const productImgs = document.getElementById('represenImgs').files;
+
+                const productImages = {
+                    representImg,
+                    descriptionImgs,
+                    productImgs
+                };
+
+                for (let file of descriptionImgs) {
+                    let ProductDescriptionImgRegisterDto = {
+                        fileName: file.name,
+                        fileType: file.type,
+                        fileSize: file.size
+                    };
+                    dImgs.push(ProductDescriptionImgRegisterDto);
+                }
+
+                for (let file of productImgs) {
+                    let ProductDescriptionImgRegisterDto = {
+                        fileName: file.name,
+                        fileType: file.type,
+                        fileSize: file.size
+                    };
+                    rImgs.push(ProductDescriptionImgRegisterDto);
+                }
+
+                let data = {
+                    ...productDto,
+                    repImg: representImg.name,
+                    desImgs: dImgs,
+                    represenImgs: rImgs
+                };
+
+                console.log(data);
+
+                // AJAX 요청 보내기 -> axios로 바꾸기
+                axios.post('/product/admin', data, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(async function(response) {
+                        const filePaths = response.data;
+                        console.log(filePaths);
+                        await iterateForGetUrl(filePaths, productImages);
+                        alert('상품이 등록되었습니다.');
+                        window.location.reload();
+
+                    })
+                    .catch(function(error) {
+                        alert('상품 등록에 실패했습니다.');
+                        console.error('Error:', error);
+                    });
+            });
+            });
+        async function iterateForGetUrl(filePaths, productImages) {
+            const uploadPromises = [];
+
+            for (let i = 0; i < filePaths.descImgPath.length; i++) {
+                uploadPromises.push(getPresignedUrl(filePaths.descImgPath[i], productImages.descriptionImgs[i]));
+            }
+            for (let i = 0; i < filePaths.prodImgPath.length; i++) {
+                uploadPromises.push(getPresignedUrl(filePaths.prodImgPath[i], productImages.productImgs[i]));
+            }
+            console.log("filePaths.repImg",filePaths.repImgPath);
+
+            uploadPromises.push(getPresignedUrl(filePaths.repImgPath, productImages.representImg));
+
+            // 모든 파일 업로드가 끝날 때까지 기다림
+            await Promise.all(uploadPromises);
+        }
+
+        function getPresignedUrl(path, file) {
+            if (!path) {
+                console.error("Invalid path:", path);
+                return;
+            }
+
+            const encodedPath = encodeURIComponent(path);
+            console.log("Encoded path:", encodedPath);
+
+            return axios.get("/product/geturl", {
+                params: {
+                    imagePath: encodedPath
+                }
+            }).then((response) => {
+                console.log(response);
+                return uploadImage(response.data, file);
+            }).catch((error) => {
+                console.log("에러", error);
+            });
+        }
+
+        async function uploadImage(url, file) {
+            const config = {
+                headers: {
+                    'Content-Type': file.type
+                }
+            };
+
+            return axios.put(url, file, config).then((response) => {
+                console.log(response);
+            }).catch((error) => {
+                console.log("에러", error);
+            });
+        }
+
+    </script>
+</div>
+</body>
+</html>

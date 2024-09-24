@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>detail</title>
+    <style>
+        h2{
+            text-align: center;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border: 1px solid #333;
+            border-collapse: collapse;
+            background-color: #fff;
+        }
+        th, td {
+            padding: 15px;
+        }
+        th {
+            width : 80px;
+            background-color: #333;
+            color: #fff;
+        }
+        td {
+            background-color: #f9f9f9;
+        }
+        tr:nth-child(even) td {
+            background-color: #eaeaea;
+        }
+
+        .button-left {
+            margin-left: 0;
+        }
+
+        .button-right {
+            margin-right: 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        button:focus {
+            outline: none;
+        }
+        .table-footer-right {
+            text-align: right;
+        }
+
+        .footer-row td {
+            padding-top: 20px;
+            padding-bottom: 10px;
+            text-align: left;
+        }
+        .footer-row td:last-child {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+<h2>공지사항</h2>
+<script th:inline="javascript">
+    let msg = [[${msg}]];
+    if(msg === "UPDATE_OK") {
+        alert("정상적으로 수정되었습니다.");
+    }
+</script>
+<table>
+    <tr>
+        <th>공지 번호</th>
+        <td th:text="${notice.notice_id}"></td>
+    </tr>
+    <tr>
+        <th>제목</th>
+        <td th:text="${notice.notice_title}"></td>
+    </tr>
+    <tr>
+        <th>작성자</th>
+        <td th:text="${notice.writer}"></td>
+    </tr>
+    <tr>
+        <th>작성일</th>
+        <td th:text="${notice.create_datetime}"></td>
+    </tr>
+    <tr>
+        <th>수정자</th>
+        <td th:text="${notice.modifier}"></td>
+    </tr>
+    <tr>
+        <th>수정일</th>
+        <td th:text="${notice.modify_datetime}"></td>
+    </tr>
+    <tr>
+        <th>내용</th>
+        <td th:text="${notice.notice_content}"></td>
+    </tr>
+    <!-- Button Row -->
+    <tr class="footer-row">
+        <td>
+            <button class="button-left" onclick="listReq()">목록</button>
+        </td>
+        <td class="table-footer-right">
+            <div class="button-group button-right">
+                <button onclick="updateReq()">수정</button>
+                <button onclick="deleteReq()">삭제</button>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<script th:inline="javascript">
+    const listReq = () => {
+        location.href = "/cs/notice/list";
+    }
+    const updateReq = () => {
+        location.href = `/cs/notice/update/[[${notice.notice_id}]]`;
+    }
+    const deleteReq = () => {
+        if(!(confirm("정말로 삭제하시겠습니까?"))) return;
+        location.href = `/cs/notice/delete/[[${notice.notice_id}]]`;
+    }
+</script>
+</body>
+
+</html>

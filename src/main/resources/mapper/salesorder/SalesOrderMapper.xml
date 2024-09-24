@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.toyproject2_5.musinsatoy.salesorder.dao.SalesOrderMapper">
+
+<!--CRUD 순서로 표기-->
+<!--    CREATE-->
+    <!--    주문 추가 -->
+    <insert id="insert" parameterType="SalesOrder">
+        INSERT INTO sales_order
+            (
+                 ORDER_ID
+                ,member_ID
+                ,ORDER_DATETIME
+                ,STATE_CODE
+
+                ,RECIPIENT
+                ,PHONE
+                ,ADDRESS_A
+                ,ADDRESS_B
+                ,POSTCODE
+                ,DELIVERY_REQUEST
+
+                ,PAYMENT_ID
+                ,PAYMENT_METHOD
+                ,PAYMENT_AMOUNT
+            )
+        VALUES
+            (    #{orderId}
+                ,#{memberId}
+                ,now()
+                ,0
+
+                ,#{recipient}
+                ,#{phone}
+                ,#{addressA}
+                ,#{addressB}
+                ,#{postcode}
+                ,#{deliveryRequest}
+
+                ,#{paymentId}
+                ,#{paymentMethod}
+                ,#{paymentAmount}
+            );
+    </insert>
+
+
+<!--    READ-->
+    <!--    row수 세기-->
+    <select id="countOrder" resultType="int">
+        SELECT count(order_id) FROM sales_order
+    </select>
+
+    <!--    주문 아이디로 주문 검색 -->
+    <select id="selectByOrderId" parameterType="String" resultType="SalesOrder">
+        SELECT *
+        FROM sales_order
+        WHERE order_id=#{orderId}
+    </select>
+
+    <!--    회원 아이디로 주문 검색, size로 페이징, 주문 아이디로 정렬 -->
+    <select id="selectAllByMemberIdAndOrderByDesc" parameterType="Map" resultType="SalesOrder">
+        SELECT *
+        FROM sales_order
+        WHERE member_id=#{memberId}
+        ORDER BY order_id DESC
+        LIMIT #{size}
+    </select>
+
+    <!--    회원 아이디로 주문 검색, key+size로 페이징, 주문 아이디로 정렬 -->
+    <select id="selectAllByLessThanIdAndMemberIdAndOrderByDesc" parameterType="Map" resultType="SalesOrder">
+        SELECT *
+        FROM sales_order
+        WHERE member_id=#{memberId}
+            AND order_id <![CDATA[ < ]]> #{orderId}
+        ORDER BY order_id DESC
+        LIMIT #{size}
+    </select>
+
+
+<!--    UPDATE-->
+    <!--    상태를 수정-->
+    <update id="updateState" parameterType="SalesOrder">
+        UPDATE sales_order
+        SET STATE_CODE = #{stateCode,jdbcType=TINYINT}
+        WHERE order_id=#{orderId}
+    </update>
+
+
+<!--    DELETE-->
+    <!--    전부 삭제 / 테스트에서 활용 -->
+    <delete id="deleteAll">
+        DELETE FROM sales_order;
+    </delete>
+
+
+</mapper>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--values의 입력값은 dto변수명-->
+
+<mapper namespace="com.toyproject2_5.musinsatoy.cs.notice.NoticeMapper">
+<!--insert-->
+    <insert id="insert" parameterType="com.toyproject2_5.musinsatoy.CS.Notice.dto.NoticeDto">
+        insert into Notice(notice_title, notice_content, writer, is_top_post, is_post)
+            values(#{notice_title}, #{notice_content}, #{writer}, #{is_top_post}, #{is_post})
+    </insert>
+<!--read-->
+    <select id="selectAllRaw" resultType="com.toyproject2_5.musinsatoy.CS.Notice.dto.NoticeDto">
+        select notice_id, notice_title, notice_content, create_datetime, modify_datetime, writer,
+               modifier, is_top_post, is_post
+        from Notice order by notice_id asc
+    </select>
+    <select id="selectById" parameterType="Long" resultType="com.toyproject2_5.musinsatoy.CS.Notice.dto.NoticeDto">
+        select notice_id, notice_title, notice_content, date_format(create_datetime, '%Y-%m-%d') as create_datetime,
+               modify_datetime, writer, modifier, is_top_post, is_post
+        from Notice
+        where notice_id = #{notice_id}
+    </select>
+    <select id="selectAllDesc" resultType="com.toyproject2_5.musinsatoy.CS.Notice.dto.NoticeDto">
+        select notice_id, notice_title, notice_content, date_format(create_datetime, '%Y-%m-%d') as create_datetime,
+               modify_datetime, writer, modifier, is_top_post, is_post
+        from Notice
+        where is_post = 'Y'
+        order by notice_id desc
+    </select>
+<!--공지리스트 사용-->
+    <select id="selectAllDescPage" parameterType="map" resultType="com.toyproject2_5.musinsatoy.CS.Notice.dto.NoticeDto">
+        select notice_id, notice_title, notice_content, date_format(create_datetime, '%Y-%m-%d') as create_datetime,
+               modify_datetime, writer, modifier, is_top_post, is_post
+        from Notice
+        where is_post = 'Y'
+        order by notice_id desc
+        limit #{offset}, #{pageSize}
+    </select>
+<!--    테스트용-->
+    <select id="selectAllAsc" resultType="com.toyproject2_5.musinsatoy.CS.Notice.dto.NoticeDto">
+        select notice_id, notice_title, notice_content, date_format(create_datetime, '%Y-%m-%d') as create_datetime,
+               modify_datetime, writer, modifier, is_top_post, is_post
+        from Notice
+        order by notice_id asc
+    </select>
+    <select id="selectAllTopPost" resultType="com.toyproject2_5.musinsatoy.CS.Notice.dto.NoticeDto">
+        select notice_id, notice_title, notice_content, date_format(create_datetime, '%Y-%m-%d') as create_datetime,
+               modify_datetime, writer, modifier, is_top_post, is_post
+        from Notice
+        where is_top_post = 'Y' and is_post = 'Y'
+        order by notice_id desc
+    </select>
+<!--update-->
+    <select id="update">
+        update Notice set notice_title=#{notice_title}, modifier=#{modifier}, notice_content=#{notice_content},
+                          modify_datetime = #{modify_datetime}, is_top_post=#{is_top_post}, is_post=#{is_post}
+        where notice_id = #{notice_id}
+    </select>
+<!--delete-->
+    <select id="deleteById">
+        delete from Notice where notice_id = #{notice_id}
+    </select>
+    <select id="deleteAll">
+        delete from Notice
+    </select>
+<!--count-->
+    <select id="count" resultType="int">
+        select count(*) from Notice
+    </select>
+</mapper>

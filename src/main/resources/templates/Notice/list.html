@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Notice List</title>
+    <style>
+        /* 중앙 정렬을 위한 스타일 */
+        .center-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        table{
+            width: 1000px;
+            border-collapse: collapse;
+        }
+        /* 각 열의 너비 */
+        th:nth-child(1), td:nth-child(1) { width: 10%; } /* 번호 열 */
+        th:nth-child(2), td:nth-child(2) { width: 50%; } /* 제목 열 */
+        th:nth-child(3), td:nth-child(3) { width: 20%; } /* 작성자 열 */
+        th:nth-child(4), td:nth-child(4) { width: 20%; } /* 작성일 열 */
+
+        table, tr, td, th {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: black;
+            color: white;
+        }
+        a {
+            text-decoration: none;
+            color: black;
+        }
+        a:link {
+            color: black;
+        }
+        a:visited{
+            color: black;
+        }
+        .thick-border th, .thick-border td {
+            border: 3px solid black;
+        }
+        .pagination {
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .pagination a {
+            color: black;
+            float: left;
+            padding: 8px 16px;
+            text-decoration: none;
+        }
+        .pagination a.active {
+            background-color: #666;
+            color: white;
+        }
+        .writeBtn {
+            margin-top: 10px;
+        }
+
+        /* 홈 버튼 스타일 */
+        .home-button {
+            position: absolute;
+            top: 10px;
+            right: 0;
+            background-color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        .home-button img {
+            width: 30px;
+            height: 30px;
+        }
+
+    </style>
+</head>
+<body>
+<script th:inline="javascript">
+    let msg = [[${msg}]];
+    if(msg === "INSERT_OK") {
+        alert("정상적으로 등록되었습니다.");
+    }
+    if(msg === "DELETE_OK") {
+        alert("정상적으로 삭제되었습니다.");
+    }
+    if(msg === "LIST_ERR") {
+        alert("표시할 내용이 없습니다.");
+    }
+    if(msg === "READ_ERR") {
+        alert("해당게시물이 존재하지 않습니다.");
+    }
+    if(msg === "UPDATE_MV_ERR") {
+        alert("업데이트할 게시물을 찾지 못했습니다.");
+    }
+    if(msg === "NOT_ADMIN") {
+        alert("권한이 없습니다.");
+    }
+    if(msg === "NOTICE_INSERT_MV_UNKNOWN"){
+        alert("입력을 수행할 수 없습니다. 다시 시도해주십시오.")
+    }
+</script>
+
+<div class="center-container">
+    <h2>공지사항</h2>
+
+    <!-- 홈 버튼 -->
+    <button class="home-button" onclick="location.href='http://localhost:8080'">
+        <img src="https://cdn-icons-png.flaticon.com/512/25/25694.png" alt="홈 아이콘">
+    </button>
+
+    <table>
+        <tr class="thick-border">
+            <th>번호</th>
+            <th>제목</th>
+            <th>작성자</th>
+            <th>작성일</th>
+        </tr>
+        <tr th:each="notice1: ${noticeDtoTopPostList}" class="thick-border">
+            <td th:text="${notice1.notice_id}"></td>
+            <td>
+                <a th:text="${notice1.notice_title}" th:href="@{|/cs/notice/${notice1.notice_id}|}"></a>
+            </td>
+            <td th:text="${notice1.writer}"></td>
+            <td th:text="${notice1.create_datetime}"></td>
+        </tr>
+        <tr th:each="notice2: ${noticeDtoDescPageList}">
+            <td th:text="${notice2.notice_id}"></td>
+            <td>
+                <a th:text="${notice2.notice_title}" th:href="@{|/cs/notice/${notice2.notice_id}|}"></a>
+            </td>
+            <td th:text="${notice2.writer}"></td>
+            <td th:text="${notice2.create_datetime}"></td>
+        </tr>
+    </table>
+
+    <div class="pagination">
+        <a th:if="${pageHandler.showPrev}" th:href="@{|/cs/notice/list?page=${pageHandler.beginPage - 1}|}">&laquo;</a>
+        <a th:each="i : ${#numbers.sequence(pageHandler.beginPage, pageHandler.endPage)}"
+           th:classappend="${i == pageHandler.page ? 'active' : ''}"
+           th:text="${i}"
+           th:href="@{|/cs/notice/list?page=${i}|}"></a>
+        <a th:if="${pageHandler.showNext}" th:href="@{|/cs/notice/list?page=${pageHandler.endPage + 1}|}">&raquo;</a>
+    </div>
+
+    <!--TODO: 추후 관리자 아니면 button 숨기기 기능 추가-->
+    <button class="writeBtn" id="writeNewBtn" th:onclick="|location.href='@{/cs/notice/insert}'|">글쓰기</button><br>
+</div>
+</body>
+</html>

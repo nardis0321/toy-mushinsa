@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>FAQ</title>
+    <style>
+        h2{
+            text-align : center;
+        }
+        table{
+            width:1000px;
+            border-collapse: collapse;
+        }
+        /* 각 열의 너비 */
+        th:nth-child(1), td:nth-child(1) { width: 10%; } /* 번호 열 */
+        th:nth-child(2), td:nth-child(2) { width: 50%; } /* 제목 열 */
+        th:nth-child(3), td:nth-child(3) { width: 20%; } /* 작성자 열 */
+        th:nth-child(4), td:nth-child(4) { width: 20%; } /* 작성일 열 */
+        table, tr, td, th {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align : center;
+        }
+        th {
+            background-color: black;
+            color: white;
+        }
+        a {
+            text-decoration: none;
+            color : black;
+        }
+        a:link {
+            color : black;
+        }
+        a:visited{
+            color : black;
+        }
+        .thick-border th, .thick-border td {
+            border: 3px solid black;
+        }
+        /* 중앙 정렬을 위한 스타일 */
+        .center-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 홈 버튼 스타일 */
+        .home-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .home-button button {
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .home-button img {
+            width: 30px;
+            height: 30px;
+        }
+        /* 모달 스타일 */
+        .modal {
+            display: none; /* 기본적으로 숨김 */
+            position: fixed;
+            z-index: 1;
+            right: 20px;
+            bottom: 20px;
+            width: 400px;
+            height: 600px;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .close {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* 챗봇 버튼 스타일 */
+        .chatbot-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: white;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .chatbot-button img {
+            width: 50px;
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+<h2>FAQ</h2>
+<div class="home-button">
+    <button onclick="location.href='http://localhost:8080'">
+        <img src="https://cdn-icons-png.flaticon.com/512/25/25694.png" alt="홈 아이콘">
+    </button>
+</div>
+<script th:inline="javascript">
+    let msg = [[${msg}]];
+    if(msg === "INSERT_OK") {
+        alert("정상적으로 등록되었습니다.");
+    }
+    if(msg === "DELETE_OK") {
+        alert("정상적으로 삭제되었습니다.");
+    }
+    if(msg === "LIST_ERR") {
+        alert("표시할 내용이 없습니다.");
+    }
+    if(msg === "READ_ERR") {
+        alert("해당게시물이 존재하지 않습니다.");
+    }
+    if(msg === "UPDATE_MV_ERR") {
+        alert("업데이트할 게시물을 찾지 못했습니다.");
+    }
+    if(msg === "NOT_ADMIN") {
+        alert("권한이 없습니다.");
+    }
+
+    //모달창 로직
+    document.addEventListener("DOMContentLoaded", function() {
+        // 모달 열기 버튼 및 닫기 버튼 요소들
+        const modal = document.getElementById("chatbotModal");
+        const btn = document.getElementById("chatbotBtn");
+        const span = document.getElementsByClassName("close")[0];
+
+        // 챗봇 버튼을 클릭하면 모달을 보여줍니다.
+        btn.onclick = function() {
+            modal.style.display = "flex";
+        };
+
+        // X 버튼을 클릭하면 모달을 닫습니다.
+        span.onclick = function() {
+            modal.style.display = "none";
+        };
+
+        // 모달 바깥을 클릭하면 모달을 닫습니다.
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        };
+    });
+</script>
+
+<div class="center-container">
+    <p>총 <strong th:text="${searchCount}"></strong> 개를 찾았습니다.</p>
+    <table>
+        <tr class="thick-border">
+            <th>번호</th>
+            <th>제목</th>
+            <th>작성자</th>
+            <th>작성일</th>
+        </tr>
+        <tr th:each="faq: ${faqSearchedList}">
+            <td th:text="${faq.faq_id}"></td>
+            <td>
+                <a th:text="${faq.faq_title}" th:href="@{|/cs/faq/${faq.faq_id}|}"></a>
+            </td>
+            <td th:text="${faq.writer}"></td>
+            <td th:text="${faq.create_datetime}"></td>
+        </tr>
+    </table><br>
+</div>
+<!--TODO: 추후 관리자 아니면 button 숨기기 기능 추가-->
+<button id="writeNewBtn" th:onclick="|location.href='@{/cs/faq/insert}'|">글쓰기</button><br>
+<!-- 챗봇 버튼 -->
+<button class="chatbot-button" id="chatbotBtn">
+    <img src="https://cdn-icons-png.flaticon.com/512/5291/5291454.png" alt="챗봇 아이콘">
+</button>
+<!-- 모달창 -->
+<div id="chatbotModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <!-- 챗봇을 표시할 iframe -->
+        <iframe src="http://localhost:5000" width="100%" height="100%" frameborder="0"></iframe>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.toyproject2_5.musinsatoy.member.join.repository.MemberDao">
+    <!-- delete All member -->
+    <delete id="deleteAll" >
+        DELETE FROM member_info
+    </delete>
+
+    <!-- count member -->
+    <select id="count" resultType="Int">
+        SELECT count(*)
+        FROM member_info
+    </select>
+
+    <!-- 회원 가입 -->
+    <insert id="insertMember" parameterType="com.toyproject2_5.musinsatoy.member.join.dto.MemberDto">
+        INSERT INTO member_info
+                (
+                 member_state_code,
+                 id,
+                 password,
+                 name,
+                 birth,
+                 sex,
+                 phone_number,
+                 email,
+                 register_datetime,
+                 recommand_id,
+                 is_admin)
+        VALUES
+                (
+                 '40001'
+                 ,#{id}
+                 ,#{password}
+                 ,#{name}
+                 ,STR_TO_DATE(#{birth}, '%Y-%m-%d')
+                 ,#{sex}
+                 ,#{phone_number}
+                 ,#{email}
+                 ,STR_TO_DATE(now(), '%Y-%m-%d %H:%i:%s')
+                 ,#{recommand_id}
+                 ,#{is_admin}
+                )
+    </insert>
+
+    <!-- 회원 정보 가져오기 -->
+    <select id="selectOne" parameterType="String" resultType="com.toyproject2_5.musinsatoy.member.join.dto.MemberDto">
+        SELECT
+                member_number,
+                id,
+                password,
+                name,
+                birth,
+                sex,
+                phone_number,
+                email,
+                recommand_id,
+                is_admin
+        FROM member_info
+        WHERE id = #{id}
+    </select>
+</mapper>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="productDescriptionImgMapper">
+<!--    <resultMap id="ProductMap" type="Product">-->
+<!--        <id column="product_id" property="userNo" jdbcType="INTEGER" javaType="int"/>-->
+<!--        <result column="name" property="userName" jdbcType="VARCHAR" javaType="String"/>-->
+<!--    </resultMap>-->
+
+    <select id="findAllByProductDescriptionId" parameterType="String" resultType="com.toyproject2_5.musinsatoy.Item.productDescriptionImg.dto.ProductDescriptionImgDetailDto">
+        SELECT name, path, kind_of FROM product_description_img WHERE product_description_id = #{productDescriptionId}
+
+    </select>
+
+    <select id="findById" parameterType="int">
+        SELECT * FROM product_description_img WHERE product_description_img_id = #{productDescriptionImgId}
+    </select>
+
+
+    <insert id="insert" parameterType="java.util.List">
+        INSERT INTO product_description_img(
+          product_description_id
+        , name
+        , order_num
+        , path
+        , is_used
+        , kind_of
+        , size
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+             #{item.productDescriptionId}
+            , #{item.name}
+            , #{item.orderNum}
+            , #{item.path}
+            , #{item.isUsed}
+            , #{item.kindOf}
+            , #{item.size}
+            )
+        </foreach>
+    </insert>
+
+
+    <delete id="deleteAllByProductDesciprionId" parameterType="String">
+        DELETE FROM product_description_img WHERE product_description_id = #{productDescriptionId}
+    </delete>
+
+
+
+
+</mapper>

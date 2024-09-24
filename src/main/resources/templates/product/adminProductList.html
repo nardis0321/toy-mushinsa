@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/mainLayout}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상품 목록</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .container {
+            margin-top: 30px;
+        }
+        .product-item {
+            margin-bottom: 15px;
+        }
+        .product-item img {
+            max-width: 100px;
+            border-radius: 8px;
+        }
+        .product-item .btn {
+            margin-left: 10px;
+        }
+
+        .product-image {
+            width: 150px;
+            height: 150px;
+            object-fit: contain; /* 필요에 따라 이미지가 요소 크기에 맞도록 자르기 */
+        }
+        .pagination ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .pagination li {
+            margin: 0 5px;
+        }
+
+        .pagination li a {
+            text-decoration: none;
+            padding: 8px 12px;
+            color: black;
+            /*border: 1px solid black;*/
+            /*border-radius: 5px;*/
+        }
+
+        .pagination li.active a {
+            background-color: #007bff;
+            color: #fff;
+            border-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+<div class="container">
+    <h1 class="mb-4">상품 목록</h1>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>이미지</th>
+            <th>상품 이름</th>
+            <th>생성 날짜</th>
+            <th>상태</th>
+            <th>작업</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="product : ${products}">
+            <td>
+                <img th:src="@{${product.repImg}}" alt="상품 이미지" class="product-image">
+            </td>
+            <td th:text="${product.name}"></td>
+            <td th:text="${product.createDatetime}"></td>
+            <td th:text="${product.productStatus}"></td>
+            <td>
+                <a th:href="@{/product/admin/{productId}(productId=${product.productId})}" class="btn btn-warning btn-sm">수정</a>
+                <button class="btn btn-danger btn-sm" th:onclick="deleteProduct([[${product.productId}]]);" type="button">삭제</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="pagination">
+        <ul>
+            <li> <a th:if="${pageInfo.isPreviousPage}" th:href ="@{|product/admin/list?pageNum=${pageInfo.productEditPageDto.pageNum -3}|}" th:text="|<|"> \< </a>   </li>
+            <li th:each="pageNum : ${#numbers.sequence(pageInfo.beginPage, pageInfo.endPage)}">
+                <!--                    th:if="${pageNum >= currentPage - 2} and ${pageNum <= currentPage + 2}"-->
+                <!--                    th:classappend="${pageNum == currentPage} ? 'active'">-->
+                <div th:if="${pageInfo.productEditPageDto.getPageNum()}==${pageNum}">
+                    <a th:href="@{#}"
+                       th:text="${pageNum}">1</a>
+                </div>
+                <div th:unless="${pageInfo.productEditPageDto.getPageNum()}==${pageNum}">
+                    <a th:href="@{|/product/admin/list?pageNum=${pageNum}|}"
+                       th:text="${pageNum}">1</a>
+                </div>
+            </li>
+            <li> <a th:if="${pageInfo.isNextPage}" th:href ="@{|product/admin/list?pageNum=${pageInfo.productEditPageDto.pageNum +3}|}" th:text="|>|"> X </a>   </li>
+
+        </ul>
+    </div>
+</div>
+    <script  th:inline="javascript">
+        function deleteProduct(productId) {
+            if (confirm("정말로 이 상품을 삭제하시겠습니까?")) {
+                $.ajax({
+                    url: '/product/admin/' + productId,
+                    type: 'DELETE',
+                    success: function(response) {
+                        // 삭제 성공 시 상품을 삭제한 행을 테이블에서 제거
+                        $('tr').has('button[onclick="deleteProduct(' + productId + ')"]').remove();
+                        alert('상품이 삭제되었습니다.');
+                        document.location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        alert('상품 삭제에 실패했습니다.');
+                        console.error('Error:', status, error);
+                    }
+                });
+            }
+        }
+    </script>
+<!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>-->
+</div>
+</body>
+</html>
