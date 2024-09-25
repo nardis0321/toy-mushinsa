@@ -18,6 +18,10 @@
     <p>Welcome, <span th:text="${session.id}">User</span></p>
 </div>
 
+<div id="auth-buttons">
+    <!-- 로그인 상태에 따라 이 부분이 동적으로 변경됩니다. -->
+</div>
+
 <!-- 로그인한 사용자가 admin일 경우 관리자 유형을 화면에 표시 -->
 <div th:if="${session.isAdmin != null}">
     <p>
@@ -32,6 +36,32 @@
 <a href="#">1:1문의</a>
 <a href="/cs/faq/list">FAQ</a>
 <a href="/cs/notice/list">공지사항</a>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const authButtons = document.getElementById('auth-buttons');
+      const token = localStorage.getItem('token'); // 또는 쿠키에서 토큰 가져오기
+
+      if (token) {
+        // 로그인 상태
+        authButtons.innerHTML = '<button onclick="logout()">로그아웃</button>';
+      } else {
+        // 비로그인 상태
+        authButtons.innerHTML = `
+          <a href="/member/login">로그인</a>
+          <a href="/member/signup">회원가입</a>
+        `;
+      }
+    });
+
+    function logout() {
+      // 토큰 삭제
+      localStorage.removeItem('token');
+      // 페이지 새로고침 또는 리다이렉트
+      window.location.reload();
+    }
+</script>
 </body>
 </html>
 
